@@ -357,13 +357,12 @@ heatmap_with_sig$Dose <- factor(heatmap_with_sig$Dose, levels = c( "1.5", "1", "
 colnames(data_spleen)
                                   
 heatmap_spleen <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
-  # Add heatmap tiles with black borders
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
-    name = "Normalized\nMedian", limits = c(0, 2),  oob = scales::squish 
+    name = "Normalized\nMedian", limits = c(0, 3),  oob = scales::squish 
   ) +
   facet_grid(Sex ~ PFAS) +
 scale_x_discrete(position = "top") + 
@@ -378,7 +377,6 @@ scale_x_discrete(position = "top") +
     panel.grid = element_blank(),
     panel.border = element_blank(),
     strip.text = element_text(face = "bold"))
-
 #Print
 ggsave(filename = "plots/spleen_heatmap.png", plot = heatmap_spleen, width = 7, height = 5, dpi = 300,bg = "white")
 print(heatmap_spleen)
@@ -402,7 +400,7 @@ data_spleen$Marker <- factor(data_spleen$Marker, levels = marker_levels)
 mean_data <- data_spleen %>%
   group_by(Sex, PFAS, Dose, Marker) %>%
   summarise(
-    mean_stat = mean(normalized, na.rm = TRUE),
+    mean_stat = median(normalized, na.rm = TRUE),
     se_stat = std.error(normalized) * 2.365,  # 95% CI
     .groups = "drop"
   ) %>%
@@ -422,7 +420,11 @@ mean_data <- mean_data %>%
   ) %>%
   mutate(
     y_position_label = mean_stat + se_stat + 1)
-
+mean_data <- mean_data %>%
+  mutate(
+    Marker = factor(Marker, levels = marker_levels),
+    Dose_factor = factor(Dose_factor, levels = dose_levels)
+  )
 #Split by sex
 data_spleen_male <- data_spleen %>% filter(Sex == "Male")
 data_spleen_female <- data_spleen%>% filter(Sex == "Female")
@@ -448,12 +450,12 @@ make_plot_by_sex <- function(data, summary, sex_label) {
       width = 0.5
     ) +
     geom_hline(yintercept = 1, linetype = "dotted", size = 1, alpha = 0.4) +
-    geom_text(
-      data = summary[!is.na(summary$significance.y), ],
-      aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
-      size = 6,
-      show.legend = FALSE
-    ) +
+   # geom_text(
+   #   data = summary[!is.na(summary$significance.y), ],
+   #   aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
+   #   size = 6,
+   #   show.legend = FALSE
+   # ) +
     facet_grid(PFAS ~ Marker, scales = "free") +
     scale_color_manual(values = custom_colors) +
     labs(
@@ -816,13 +818,12 @@ heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("B.Cells",
 heatmap_with_sig$Dose <- factor(heatmap_with_sig$Dose, levels = c( "1.5", "1", "0.5", "0.166","Vehicle", "Naive"))
                
 heatmap_blood <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
-  # Add heatmap tiles with black borders
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
-    name = "Normalized\nMedian", limits = c(0, 2),  oob = scales::squish 
+    name = "Normalized\nMedian", limits = c(0, 1.5),  oob = scales::squish 
   ) +
   facet_grid(Sex ~ PFAS) +
 scale_x_discrete(position = "top") + 
@@ -860,7 +861,7 @@ data_blood$Marker <- factor(data_blood$Marker, levels = marker_levels)
 mean_data <- data_blood %>%
   group_by(Sex, PFAS, Dose, Marker) %>%
   summarise(
-    mean_stat = mean(normalized, na.rm = TRUE),
+    mean_stat = median(normalized, na.rm = TRUE),
     se_stat = std.error(normalized) * 2.365,  # 95% CI
     .groups = "drop"
   ) %>%
@@ -880,7 +881,11 @@ mean_data <- mean_data %>%
   ) %>%
   mutate(
     y_position_label = mean_stat + se_stat + 1)
-
+mean_data <- mean_data %>%
+  mutate(
+    Marker = factor(Marker, levels = marker_levels),
+    Dose_factor = factor(Dose_factor, levels = dose_levels)
+  )
 #Split by sex
 data_blood_male <- data_blood %>% filter(Sex == "Male")
 data_blood_female <- data_blood %>% filter(Sex == "Female")
@@ -906,12 +911,12 @@ make_plot_by_sex <- function(data, summary, sex_label) {
       width = 0.5
     ) +
     geom_hline(yintercept = 1, linetype = "dotted", size = 1, alpha = 0.4) +
-    geom_text(
-      data = summary[!is.na(summary$significance.y), ],
-      aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
-      size = 6,
-      show.legend = FALSE
-    ) +
+   # geom_text(
+   #   data = summary[!is.na(summary$significance.y), ],
+   #   aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
+   #   size = 6,
+   #   show.legend = FALSE
+   # ) +
     facet_grid(PFAS ~ Marker, scales = "free") +
     scale_color_manual(values = custom_colors) +
     labs(
@@ -1272,13 +1277,11 @@ heatmap_with_sig <- heatmap_data %>%
 
 heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("DN", "DN.CD25", "DN.DN", "DP", "DP.CD69", "SP4", "SP4.CD69", "SP8", "SP8.CD69", "Macrophages", "Dendritic.Cells", "B.Cells"))
 heatmap_with_sig$Dose <- factor(heatmap_with_sig$Dose, levels = c( "1.5", "1", "0.5", "0.166","Vehicle", "Naive"))
-
-  colnames(data_thymus)                                
+                             
 heatmap_thymus <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
-  # Add heatmap tiles with black borders
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 2),  oob = scales::squish 
@@ -1320,7 +1323,7 @@ data_thymus$Marker <- factor(data_thymus$Marker, levels = marker_levels)
 mean_data <- data_thymus %>%
   group_by(Sex, PFAS, Dose, Marker) %>%
   summarise(
-    mean_stat = mean(normalized, na.rm = TRUE),
+    mean_stat = median(normalized, na.rm = TRUE),
     se_stat = std.error(normalized) * 2.365,  # 95% CI
     .groups = "drop"
   ) %>%
@@ -1340,7 +1343,11 @@ mean_data <- mean_data %>%
   ) %>%
   mutate(
     y_position_label = mean_stat + se_stat + 1)
-
+mean_data <- mean_data %>%
+  mutate(
+    Marker = factor(Marker, levels = marker_levels),
+    Dose_factor = factor(Dose_factor, levels = dose_levels)
+  )
 #Split by sex
 data_thymus_male <- data_thymus %>% filter(Sex == "Male")
 data_thymus_female <- data_thymus %>% filter(Sex == "Female")
@@ -1366,12 +1373,12 @@ make_plot_by_sex <- function(data, summary, sex_label) {
       width = 0.5
     ) +
     geom_hline(yintercept = 1, linetype = "dotted", size = 1, alpha = 0.4) +
-    geom_text(
-      data = summary[!is.na(summary$significance.y), ],
-      aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
-      size = 6,
-      show.legend = FALSE
-    ) +
+   # geom_text(
+   #   data = summary[!is.na(summary$significance.y), ],
+   #   aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
+   #   size = 6,
+   #   show.legend = FALSE
+   # ) +
     facet_grid(PFAS ~ Marker, scales = "free") +
     scale_color_manual(values = custom_colors) +
     labs(
@@ -1699,8 +1706,7 @@ if (nrow(sig_data) > 0) {
       color = ifelse(sig_data$Sex == "Female", "red", "blue"),
       inherit.aes = FALSE,
       size = 6,
-      position = position_dodge(width = 0.75)
-    )
+      position = position_dodge(width = 0.75))
   }
 
   norm_plot <- norm_plot +
@@ -1735,13 +1741,12 @@ heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("G.CSF", "
 ))
                                   
 heatmap_cyto <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
-  # Add heatmap tiles with black borders
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
-    name = "Normalized\nMedian", limits = c(0, 2),  oob = scales::squish 
+    name = "Normalized\nMedian", limits = c(0, 3),  oob = scales::squish 
   ) +
   facet_grid(Sex ~ PFAS) +
 scale_x_discrete(position = "top") + 
@@ -1756,6 +1761,7 @@ scale_x_discrete(position = "top") +
     panel.grid = element_blank(),
     panel.border = element_blank(),
     strip.text = element_text(face = "bold"))
+    strip.text = element_text(face = "bold")
 
 #Print
 ggsave(filename = "plots/cyto_heatmap.png", plot = heatmap_cyto, width = 7, height = 5, dpi = 300,bg = "white")
@@ -1780,7 +1786,7 @@ data_cyto$Marker <- factor(data_cyto$Marker, levels = marker_levels)
 mean_data <- data_cyto %>%
   group_by(Sex, PFAS, Dose, Marker) %>%
   summarise(
-    mean_stat = mean(normalized, na.rm = TRUE),
+    mean_stat = median(normalized, na.rm = TRUE),
     se_stat = std.error(normalized) * 2.365,  # 95% CI
     .groups = "drop"
   ) %>%
@@ -1801,6 +1807,11 @@ mean_data <- mean_data %>%
   mutate(
     y_position_label = mean_stat + se_stat + 1)
 
+mean_data <- mean_data %>%
+  mutate(
+    Marker = factor(Marker, levels = marker_levels),
+    Dose_factor = factor(Dose_factor, levels = dose_levels)
+  )
 #Split by sex
 data_cyto_male <- data_cyto %>% filter(Sex == "Male")
 data_cyto_female <- data_cyto %>% filter(Sex == "Female")
@@ -1826,12 +1837,12 @@ make_plot_by_sex <- function(data, summary, sex_label) {
       width = 0.5
     ) +
     geom_hline(yintercept = 1, linetype = "dotted", size = 1, alpha = 0.4) +
-    geom_text(
-      data = summary[!is.na(summary$significance.y), ],
-      aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
-      size = 6,
-      show.legend = FALSE
-    ) +
+   # geom_text(
+   #   data = summary[!is.na(summary$significance.y), ],
+   #   aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
+   #   size = 6,
+   #   show.legend = FALSE
+   # ) +
     facet_grid(PFAS ~ Marker, scales = "free") +
     scale_color_manual(values = custom_colors) +
     labs(
@@ -2193,13 +2204,12 @@ heatmap_with_sig$Dose <- factor(heatmap_with_sig$Dose, levels = c( "1.5", "1", "
 heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("ALP",	"ALT",	"CA",	"CHOL",	"FT4", "LDH","TBI",	"TGL"))
                                   
 heatmap_bio <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
-  # Add heatmap tiles with black borders
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
-    name = "Normalized\nMedian", limits = c(0, 2),  oob = scales::squish 
+    name = "Normalized\nMedian", limits = c(0, 4),  oob = scales::squish 
   ) +
   facet_grid(Sex ~ PFAS) +
 scale_x_discrete(position = "top") + 
@@ -2214,7 +2224,6 @@ scale_x_discrete(position = "top") +
     panel.grid = element_blank(),
     panel.border = element_blank(),
     strip.text = element_text(face = "bold"))
-
 #Print
 ggsave(filename = "plots/bio_heatmap.png", plot = heatmap_bio, width = 7, height = 5, dpi = 300,bg = "white")
 print(heatmap_bio)
@@ -2236,7 +2245,7 @@ data_bio$Marker <- factor(data_bio$Marker, levels = marker_levels)
 mean_data <- data_bio %>%
   group_by(Sex, PFAS, Dose, Marker) %>%
   summarise(
-    mean_stat = mean(normalized, na.rm = TRUE),
+    mean_stat = median(normalized, na.rm = TRUE),
     se_stat = std.error(normalized) * 2.365,  # 95% CI
     .groups = "drop"
   ) %>%
@@ -2282,12 +2291,12 @@ make_plot_by_sex <- function(data, summary, sex_label) {
       width = 0.5
     ) +
     geom_hline(yintercept = 1, linetype = "dotted", size = 1, alpha = 0.4) +
-    geom_text(
-      data = summary[!is.na(summary$significance.y), ],
-      aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
-      size = 6,
-      show.legend = FALSE
-    ) +
+   # geom_text(
+   #   data = summary[!is.na(summary$significance.y), ],
+   #   aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
+   #   size = 6,
+   #   show.legend = FALSE
+   # ) +
     facet_grid(PFAS ~ Marker, scales = "free") +
     scale_color_manual(values = custom_colors) +
     labs(
@@ -2313,6 +2322,24 @@ print(plot_male)
 ggsave(filename = "plots/bio_dr_male.png", plot = plot_male, width = 7, height = 5, dpi = 300,bg = "white")
 print(plot_female)
 ggsave(filename = "plots/bio_dr_feamle.png", plot = plot_female, width = 7, height = 5, dpi = 300,bg = "white")
+```
+
+#Liver toxicity using real values
+
+```{r}
+#Read in df
+#If multipl RR used first (checked that they were similar)
+#Converted ug/kg to mg/kg for naive and vehicle first 
+
+#Have to set MDL 
+data_conc <- read.csv("../invivo-pfas-immunotox/Liver PFAS values phase 2 and 3.csv")
+# Rename column Sample. to Mouse ID
+data_bio <- data_bio %>%
+  rename(`Mouse.ID` = `Sample.`)
+data_combined <- data_bio %>%
+  left_join(
+    data_conc %>% select(`Mouse.ID`, PFOA, PFOS), 
+    by = c("Mouse.ID" = "Mouse.ID"))
 ```
 
 #Tissue weight stats and plot
@@ -2649,10 +2676,9 @@ heatmap_with_sig$Dose <- factor(heatmap_with_sig$Dose, levels = c( "1.5", "1", "
 heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("Liver", "Pancreas", "Spleen", "Thymus", "Kidneys", "GI.Tract"))
                                   
 heatmap_tissue <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
-  # Add heatmap tiles with black borders
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 2),  oob = scales::squish 
@@ -2692,14 +2718,14 @@ data_tissue$Marker <- factor(data_tissue$Marker, levels = marker_levels)
 mean_data <- data_tissue %>%
   group_by(Sex, PFAS, Dose, Marker) %>%
   summarise(
-    mean_stat = mean(normalized, na.rm = TRUE),
+    mean_stat = median(normalized, na.rm = TRUE),
     se_stat = std.error(normalized) * 2.365,  # 95% CI
     .groups = "drop"
   ) %>%
   mutate(
     Chemical = PFAS,
     significance = NA_character_,
-    y_position_label = mean_stat + se_stat + 1,
+    y_position_label = mean_stat + se_stat + 0.5,
     Dose_factor = Dose)
 
 #Join significance annotations
@@ -2709,10 +2735,12 @@ mean_data <- mean_data %>%
       select(PFAS, Marker, group1, significance) %>%
       rename(Dose = group1),
     by = c("PFAS", "Marker", "Dose")
-  ) %>%
+  ) 
+mean_data <- mean_data %>%
   mutate(
-    y_position_label = mean_stat + se_stat + 1)
-
+    Marker = factor(Marker, levels = marker_levels),
+    Dose_factor = factor(Dose_factor, levels = dose_levels)
+  )
 #Split by sex
 data_tissue_male <- data_tissue %>% filter(Sex == "Male")
 data_tissue_female <- data_tissue %>% filter(Sex == "Female")
@@ -2722,11 +2750,10 @@ mean_data_female <- mean_data %>% filter(Sex == "Female")
 #Plot
 make_plot_by_sex <- function(data, summary, sex_label) {
   ggplot() +
-    geom_jitter(
-      data = data,
-      aes(x = Dose, y = normalized, color = Marker),
-      size = 1, alpha = 0.4, width = 0.2
-    ) +
+    geom_jitter(data = data,
+  aes(x = Dose, y = normalized, color = Marker),
+  size = 1, alpha = 0.4,
+  position = position_dodge(width = 0.2)) +
     geom_line(
       data = summary,
       aes(x = Dose_factor, y = mean_stat, group = interaction(Marker, PFAS), color = Marker),
@@ -2738,13 +2765,13 @@ make_plot_by_sex <- function(data, summary, sex_label) {
       width = 0.5
     ) +
     geom_hline(yintercept = 1, linetype = "dotted", size = 1, alpha = 0.4) +
-    geom_text(
-      data = summary[!is.na(summary$significance.y), ],
-      aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
-      size = 6,
-      show.legend = FALSE
-    ) +
-    facet_grid(PFAS ~ Marker, scales = "free") +
+   # geom_text(
+   #   data = summary[!is.na(summary$significance.y), ],
+   #   aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
+   #   size = 6,
+   #   show.legend = FALSE
+   # ) +
+    facet_grid(PFAS ~ Marker, scales = "free_y") +
     scale_color_manual(values = custom_colors) +
     labs(
       title = paste("Normalized Response -", sex_label),
@@ -2766,7 +2793,7 @@ make_plot_by_sex <- function(data, summary, sex_label) {
 plot_male <- make_plot_by_sex(data_tissue_male, mean_data_male, "Male")
 plot_female <- make_plot_by_sex(data_tissue_female, mean_data_female, "Female")
 print(plot_male)
-ggsave(filename = "plots/tissue_dr_male.png", plot = plot_male, width = 7, height = 5, dpi = 300,bg = "white")
+ggsave(filename = "plots/tissue_dr_male.png", plot = plot_male, width = 20, height = 7, dpi = 300,bg = "white")
 print(plot_female)
 ggsave(filename = "plots/tissue_dr_feamle.png", plot = plot_female, width = 7, height = 5, dpi = 300,bg = "white")
 ```
@@ -2839,9 +2866,6 @@ if (!is.na(kw_test$p.value) && kw_test$p.value < 0.05) {
             group1 = str_split(Comparison, " - ", simplify = TRUE)[,1],
             group2 = str_split(Comparison, " - ", simplify = TRUE)[,2],
             significance = case_when(
-              P.adj < 0.001 ~ "***",
-              P.adj < 0.01 ~ "**",
-              P.adj < 0.05 ~ "*",
               TRUE ~ ""
             ),
             PFAS = chem,

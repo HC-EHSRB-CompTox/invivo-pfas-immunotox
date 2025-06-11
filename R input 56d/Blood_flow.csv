@@ -1,0 +1,213 @@
+﻿Sample:,Sex,group,B Cells,Monocytes,T Cells,CD4,CD25+ CD4,CD8,DN T Cells,Organ,Phase
+Feb 21_FA57_041.fcs,Female,PFOA 1.5,46.8,5.85,33.2,52.1,5.3,43.3,3.6,Blood,1
+Feb 21_FA58_043.fcs,Female,PFOA 1.5,47.9,7.09,28.7,48.4,4.54,45.5,4.6,Blood,1
+Feb 21_FA60_047.fcs,Female,PFOA 1.5,42.6,9.43,28.8,55.4,3.06,39.8,3.41,Blood,1
+Feb 21_FA61_049.fcs,Female,PFOA 1.5,47.2,6.99,29.5,51.1,4.44,42.5,4.47,Blood,1
+Feb 21_FA62_051.fcs,Female,PFOA 1.5,49.1,7.89,25.5,55,4.87,38.8,3.48,Blood,1
+Feb 21_FA63_053.fcs,Female,PFOA 1.5,48.8,9.45,26.3,53.5,4.5,41.5,3.85,Blood,1
+Feb 21_FA64_055.fcs,Female,PFOA 1.5,46.2,7.21,33.5,53.4,3.22,42.1,3.47,Blood,1
+Feb 21_FN10_048.fcs,Female,Naive,49.5,6.6,28.9,57.1,5.22,37,4.5,Blood,1
+Feb 21_FN11_042.fcs,Female,Naive,50.9,4.2,33,55.9,4.95,39.3,3.64,Blood,1
+Feb 21_FN12_050.fcs,Female,Naive,41.7,7.61,31.5,56,4.8,39.1,3.63,Blood,1
+Feb 21_FN13 re-do_045.fcs,Female,Naive,52.9,4.33,29.4,54.1,4.35,40.2,4.03,Blood,1
+Feb 21_FN13_044.fcs,Female,Naive,54.1,2.76,30.3,45.3,2.41,36.8,3.82,Blood,1
+Feb 21_FN14_052.fcs,Female,Naive,48.1,7.98,30.7,46.6,5.33,46.8,4.79,Blood,1
+Feb 21_FN15_046.fcs,Female,Naive,48.3,6.16,29.6,48.9,4.11,45,4.54,Blood,1
+Feb 21_FN16_054.fcs,Female,Naive,51.2,7.15,25.3,48,4.79,45.8,4.75,Blood,1
+Feb 22_FS41_061.fcs,Female,PFOS 1.5,45.8,7.01,32.5,52.6,5.67,42.5,3.43,Blood,1
+Feb 22_FS42_063.fcs,Female,PFOS 1.5,45,6.83,32.3,52.9,4.44,42.6,3.07,Blood,1
+Feb 22_FS43_065.fcs,Female,PFOS 1.5,39.2,9.71,32.7,54.3,5.18,41.2,3.28,Blood,1
+Feb 22_FS45_068.fcs,Female,PFOS 1.5,45.1,7.12,31.4,52.7,4.81,41.7,3.99,Blood,1
+Feb 22_FS46_070.fcs,Female,PFOS 1.5,43.1,6.48,31,53.3,4.76,41.6,3.39,Blood,1
+Feb 22_FS47_072.fcs,Female,PFOS 1.5,48.2,5.93,32,52.7,5.03,41.8,3.85,Blood,1
+Feb 22_FS48_074.fcs,Female,PFOS 1.5,43.8,9.81,32,53,5.19,42.5,3.17,Blood,1
+Feb 22_FV25_060.fcs,Female,Vehicle,44.5,7.57,34.4,54.3,4.45,40.5,3.65,Blood,1
+Feb 22_FV26_067.fcs,Female,Vehicle,42.1,5.96,39,50.5,3.7,43.6,4.21,Blood,1
+Feb 22_FV27_062.fcs,Female,Vehicle,49.7,5.71,27.9,54.6,4.43,40,4.07,Blood,1
+Feb 22_FV28_069.fcs,Female,Vehicle,37.7,8.7,36.1,59,3.9,35.9,3.86,Blood,1
+Feb 22_FV29_064.fcs,Female,Vehicle,46,4.01,34.5,56.1,4.9,38.9,3.18,Blood,1
+Feb 22_FV30_071.fcs,Female,Vehicle,49.3,5.8,30.7,53,5.73,41.3,4.31,Blood,1
+"Feb 22_FV31,3f,_066.fcs",Female,Vehicle,48.1,6.9,32.9,48.6,4.49,40.5,3.51,Blood,1
+Feb 22_FV32_073.fcs,Female,Vehicle,47.7,8.12,28.2,57.4,5.33,37.3,3.87,Blood,1
+Feb 19_MA49_002.fcs,Male,PFOA 1.5,57.7,3.32,30.6,51.2,5.01,44.2,3.39,Blood,1
+Feb 19_MA50_004.fcs,Male,PFOA 1.5,47.5,4.97,31.1,50.1,5.05,44.6,3.93,Blood,1
+Feb 19_MA51_005.fcs,Male,PFOA 1.5,51,3.06,34.4,50.6,5.51,45,3.19,Blood,1
+Feb 19_MA52_007.fcs,Male,PFOA 1.5,55.6,7.46,24.3,50.7,6.43,43.8,4.39,Blood,1
+Feb 19_MA53_009.fcs,Male,PFOA 1.5,51.2,7.6,26.7,49.2,4.62,46.6,3.33,Blood,1
+Feb 19_MA54_011.fcs,Male,PFOA 1.5,59.6,5.53,23.6,49.9,5.76,45.7,3.38,Blood,1
+Feb 19_MA55_013.fcs,Male,PFOA 1.5,63.4,3.42,20.6,47.3,5.47,48.1,3.56,Blood,1
+Feb 19_MA56_015.fcs,Male,PFOA 1.5,59.3,4.36,23.9,50,4.16,44.8,3.85,Blood,1
+Feb 19_MN01_001.fcs,Male,Naive,57.5,3.59,26.1,49.8,7.13,44.3,4.51,Blood,1
+Feb 19_MN02_008.fcs,Male,Naive,59.5,2.56,27.4,48.4,6.14,46.8,3.61,Blood,1
+Feb 19_MN03_003.fcs,Male,Naive,55.8,6.03,27.1,52.8,5.51,42.4,3.69,Blood,1
+Feb 19_MN04_010.fcs,Male,Naive,58.1,6.86,20,51.2,6.24,42.7,4.8,Blood,1
+Feb 19_MN06_012.fcs,Male,Naive,61.1,6.01,20.7,47.3,4.85,47.2,4.02,Blood,1
+Feb 19_MN07_006.fcs,Male,Naive,61.2,4.77,23.7,49.3,5.04,45.1,4.36,Blood,1
+Feb 19_MN08_014.fcs,Male,Naive,52.2,9.24,22.9,49.6,5.4,44.7,4.48,Blood,1
+Feb 20_MS33_022.fcs,Male,PFOS 1.5,62.4,4.26,23.3,52,5.33,43.8,3.05,Blood,1
+Feb 20_MS34_024.fcs,Male,PFOS 1.5,60.1,5.95,19.3,50.5,5.66,44.4,3.76,Blood,1
+Feb 20_MS35_026.fcs,Male,PFOS 1.5,57.8,6.35,23.4,51.1,5.63,44.8,3.21,Blood,1
+Feb 20_MS36_028.fcs,Male,PFOS 1.5,56.4,4.18,25.1,45.3,4.74,49.2,4.11,Blood,1
+Feb 20_MS37_030.fcs,Male,PFOS 1.5,55.3,7.61,19,47.8,5.21,46.3,4.67,Blood,1
+Feb 20_MS38_032.fcs,Male,PFOS 1.5,61.8,3.81,20.6,48.4,5.55,46.4,3.68,Blood,1
+Feb 20_MS39_034.fcs,Male,PFOS 1.5,54.5,7.55,19.6,50.4,6.02,43.5,4.83,Blood,1
+Feb 20_MS40_036.fcs,Male,PFOS 1.5,51.9,6.06,20.8,48.3,5.47,45,5,Blood,1
+Feb 20_MV18_029.fcs,Male,Vehicle,62,2.82,26.8,52.5,5.5,42.8,3.51,Blood,1
+Feb 20_MV19_023.fcs,Male,Vehicle,63.2,3.03,21.5,47.9,4.88,47,3.89,Blood,1
+Feb 20_MV20_031.fcs,Male,Vehicle,59.6,5.27,20.7,51.9,5.01,43.8,3.26,Blood,1
+Feb 20_MV21_025.fcs,Male,Vehicle,63.5,5.2,19.2,51,5.57,43.8,3.96,Blood,1
+Feb 20_MV22_033.fcs,Male,Vehicle,59.8,2.75,26.2,52.5,5.62,42,4,Blood,1
+Feb 20_MV23_027.fcs,Male,Vehicle,56.7,5.91,25.3,53.4,4.19,42.4,3.2,Blood,1
+Feb 20_MV24_035.fcs,Male,Vehicle,56.1,4.45,26.1,50.9,4.58,44.5,3.38,Blood,1
+April 23_MN65_001.fcs,Male,Naive,53.5,8.91,23.8,52.2,5.19,42,4.29,Blood,2
+April 23_MN66_002.fcs,Male,Naive,59.9,8.62,19.3,50,6.57,44.4,4.42,Blood,2
+April 24_MN67_001.fcs,Male,Naive,58.4,6.89,23.4,48.8,5.95,45.7,4.33,Blood,2
+April 24_MN68_002.fcs,Male,Naive,60,7.38,19.5,51.8,6.58,41.9,4.81,Blood,2
+April 25_MN69_001.fcs,Male,Naive,47.9,9.62,22.8,52,3,42.3,4.2,Blood,2
+April 25_MN70_002.fcs,Male,Naive,56.1,5.63,24.3,56.3,5.58,38.9,3.61,Blood,2
+April 26_MN71_001.fcs,Male,Naive,47,9.91,22.5,48.8,3.89,46,3.67,Blood,2
+April 26_MN72_002.fcs,Male,Naive,58.2,6.47,20.1,52,4.26,42.7,3.52,Blood,2
+April 23_MA81_005.fcs,Male,PFOA 0.166,63.7,2.73,26.1,51.9,4.44,43.4,3.62,Blood,2
+April 23_MA82_006.fcs,Male,PFOA 0.166,56.9,2.77,30,50.4,5.61,44.7,3.72,Blood,2
+April 24_MA83_005.fcs,Male,PFOA 0.166,61.6,5.48,22.2,49.8,5.33,45.2,3.79,Blood,2
+April 24_MA84_006.fcs,Male,PFOA 0.166,58,6.66,25.4,53.9,5.85,41.1,3.82,Blood,2
+April 25_MA86_005.fcs,Male,PFOA 0.166,56.5,5.94,25.3,50.9,3.62,45.1,2.88,Blood,2
+April 26_MA87_005.fcs,Male,PFOA 0.166,55.3,5.52,28.3,49.6,5.92,45.3,3.82,Blood,2
+April 26_MA88_006.fcs,Male,PFOA 0.166,57.8,4.92,26.4,55.7,4.73,39.9,3.07,Blood,2
+April 23_MA89_007.fcs,Male,PFOA 0.5,49.5,4.06,33.6,55.7,3.85,40.1,3.08,Blood,2
+April 23_MA90_008.fcs,Male,PFOA 0.5,60.4,6.08,22.4,50.4,4.99,44.5,3.98,Blood,2
+April 24_MA91_007.fcs,Male,PFOA 0.5,60,4.31,27.6,51.4,5.34,44.4,3.21,Blood,2
+April 24_MA92_008.fcs,Male,PFOA 0.5,60.3,4.74,25.7,51.2,6.08,44.1,3.55,Blood,2
+April 25_MA93_006.fcs,Male,PFOA 0.5,55.9,3.57,30.8,57.8,4.5,37.7,3.41,Blood,2
+April 26_MA95_007.fcs,Male,PFOA 0.5,54.2,6.4,28.8,52.3,5.67,43.3,3.12,Blood,2
+April 26_MA96_008.fcs,Male,PFOA 0.5,52.6,2.07,38.5,52.1,4.41,43.8,3.1,Blood,2
+April 23_MA97_009.fcs,Male,PFOA 1,51.5,7.3,30.6,52.3,5.52,43.3,3.39,Blood,2
+April 23_MA98_010.fcs,Male,PFOA 1,56.1,5.81,27.5,49.1,5.4,45.7,3.88,Blood,2
+April 24_MA100_009.fcs,Male,PFOA 1,53.9,6.77,26.8,51.5,5.8,44,3.48,Blood,2
+April 25_MA101_007.fcs,Male,PFOA 1,45.9,8.74,28.6,51.3,5.47,44.7,2.94,Blood,2
+April 26_MA103_009.fcs,Male,PFOA 1,53.9,7.74,24.1,52.6,5.68,42.1,3.95,Blood,2
+April 26_MA104_010.fcs,Male,PFOA 1,46.1,2.75,42.1,55.3,4.43,41,2.56,Blood,2
+April 23_MA105_011.fcs,Male,PFOA 1.5,56.6,6.17,26,39.2,6.39,47.6,2.32,Blood,2
+April 23_MA106_012.fcs,Male,PFOA 1.5,50.9,5.73,30.5,47.9,5.61,47.1,3.83,Blood,2
+April 24_MA108_010.fcs,Male,PFOA 1.5,48.1,4.39,39.8,53.6,4.72,42.5,2.97,Blood,2
+April 25_MA109_008.fcs,Male,PFOA 1.5,56.2,4.43,28.8,54.7,5.23,41.3,2.85,Blood,2
+April 25_MA110_009.fcs,Male,PFOA 1.5,51.7,6.17,29.4,55.6,5.95,40.1,3.23,Blood,2
+April 26_MA111_011.fcs,Male,PFOA 1.5,53.3,4.38,30.7,50.9,5.11,45.1,2.87,Blood,2
+April 26_MA112_012.fcs,Male,PFOA 1.5,48.4,7.24,31.2,52.1,5.25,43.9,3.03,Blood,2
+April 23_MS113_013.fcs,Male,PFOS 0.166,62.2,4.4,24.1,43.4,5.23,43.2,2.51,Blood,2
+April 23_MS114_014.fcs,Male,PFOS 0.166,65.7,2.35,22.9,52.9,4.03,42.2,3.1,Blood,2
+April 24_MS115_011.fcs,Male,PFOS 0.166,51.7,7.98,26.5,49.8,5.47,44.2,4.8,Blood,2
+April 24_MS116_012.fcs,Male,PFOS 0.166,53.8,6.76,26.3,49.1,3.36,45.4,4.29,Blood,2
+April 25_MS117_010.fcs,Male,PFOS 0.166,52.7,6.32,29.7,53.8,5.69,41.7,3.47,Blood,2
+April 25_MS118_011.fcs,Male,PFOS 0.166,50.4,6.86,26.6,51.4,7.66,43.5,3.8,Blood,2
+April 26_MS119_013.fcs,Male,PFOS 0.166,53.3,2.5,36.6,51.6,4.38,43.6,3.73,Blood,2
+April 26_MS120_014.fcs,Male,PFOS 0.166,50.5,5.27,28.7,53.7,4.98,41.5,3.36,Blood,2
+April 23_MS121_015.fcs,Male,PFOS 0.5,50.1,8.2,27.1,48.9,4.84,45.3,4.39,Blood,2
+April 23_MS122_016.fcs,Male,PFOS 0.5,57,6.61,24,50.4,6.34,42.1,5.93,Blood,2
+April 24_MS123_013.fcs,Male,PFOS 0.5,56.7,7.2,24.1,51.6,7.15,43.3,3.95,Blood,2
+April 24_MS124_014.fcs,Male,PFOS 0.5,53.4,6.47,29,52.6,5.81,42.9,3.49,Blood,2
+April 25_MS125_012.fcs,Male,PFOS 0.5,51.5,9.15,25.2,54.6,7.19,40.9,3.31,Blood,2
+April 26_MS127_015.fcs,Male,PFOS 0.5,53.1,7.07,27,53.2,6.24,42.1,3.59,Blood,2
+April 26_MS128_016.fcs,Male,PFOS 0.5,39.7,7.53,22.2,51.4,4.54,44,3.31,Blood,2
+April 23_MS129_017.fcs,Male,PFOS 1,46.6,7.66,24.6,50.3,5.24,45.4,3.25,Blood,2
+April 23_MS130_018.fcs,Male,PFOS 1,52,7.38,28.7,54.5,5.21,41.2,3.11,Blood,2
+April 24_MS131_015.fcs,Male,PFOS 1,46.8,9.42,26.4,49.7,5.75,45.6,3.51,Blood,2
+April 24_MS132_016.fcs,Male,PFOS 1,40.4,8.46,31.7,45.7,5.56,48.8,4.24,Blood,2
+April 25_MS133_013.fcs,Male,PFOS 1,50.7,7.13,28.7,50.4,7.93,45.6,2.85,Blood,2
+April 25_MS134_014.fcs,Male,PFOS 1,48.9,6.97,28.1,45.4,8.11,50,3.65,Blood,2
+April 26_MS135_017.fcs,Male,PFOS 1,53.7,4.86,29.1,44.6,5.45,51.8,2.73,Blood,2
+April 26_MS136_018.fcs,Male,PFOS 1,54.4,4.92,26.1,50.6,6.23,45.6,2.95,Blood,2
+April 23_MS137_019.fcs,Male,PFOS 1.5,56.6,7.21,20.5,46.2,3.71,50.2,2.5,Blood,2
+April 23_MS138_020.fcs,Male,PFOS 1.5,48.6,9.49,22.9,46.9,6.25,48.5,3.32,Blood,2
+April 24_MS139_017.fcs,Male,PFOS 1.5,54.4,5.67,27.7,48.7,6.51,46.8,3.47,Blood,2
+April 24_MS140_018.fcs,Male,PFOS 1.5,48.3,7.68,29.8,53.6,7.04,42.7,2.8,Blood,2
+April 25_MS141_015.fcs,Male,PFOS 1.5,47.5,8.38,25.7,51.1,8.75,44.8,3.21,Blood,2
+April 25_MS142_016.fcs,Male,PFOS 1.5,48.9,8.13,26.3,51.7,7.28,44.2,3.14,Blood,2
+April 26_MS143_019.fcs,Male,PFOS 1.5,44.3,7.6,27.9,47.6,5.93,47.8,3.42,Blood,2
+April 26_MS144_020.fcs,Male,PFOS 1.5,47.7,5.53,32.3,52.3,6.55,43.4,3.11,Blood,2
+April 23_MV73_003.fcs,Male,Vehicle,54.2,6.93,23.2,52.5,5.93,42.4,3.6,Blood,2
+April 23_MV74_004.fcs,Male,Vehicle,53.2,5.98,28.4,57.9,4.75,37.8,3.08,Blood,2
+April 24_MV75_003.fcs,Male,Vehicle,53.4,7,28.4,53.1,4.89,42,3.71,Blood,2
+April 24_MV76_004.fcs,Male,Vehicle,59.3,4.99,24.9,54.8,4.94,41.3,2.9,Blood,2
+April 25_MV77_003.fcs,Male,Vehicle,59.5,6.79,20.6,47.1,5.3,47.1,4.04,Blood,2
+April 25_MV78_004.fcs,Male,Vehicle,51.8,6.97,27.9,50.3,5.76,45.1,3.43,Blood,2
+April 26_MV79_003.fcs,Male,Vehicle,60.6,4.33,26.3,49.9,4.16,45.2,3.6,Blood,2
+April 26_MV80_004.fcs,Male,Vehicle,54.7,7.36,25,54.3,5.36,40.6,3.39,Blood,2
+,,,,,,,,,,,
+July 8_FN145_001.fcs,Female,Naive,31.9,10.9,44.2,50.5,5.78,43,5.43,Blood,3
+July 8_FN146_002.fcs,Female,Naive,36,10.6,36.8,52.7,6.53,41.3,5.13,Blood,3
+July 9_FN147_026.fcs,Female,Naive,44.9,5.04,38.2,49.4,6.67,44.1,5.54,Blood,3
+July 9_FN148_027.fcs,Female,Naive,47.8,6.1,35,53.7,6.68,40.6,4.9,Blood,3
+July 10_FN149_049.fcs,Female,Naive,53.1,11.9,22,53.2,9.21,39.5,6.16,Blood,3
+July 10_FN150_050.fcs,Female,Naive,53.2,5.51,31,52.2,8.43,42.8,4.23,Blood,3
+July 11_FN152_073.fcs,Female,Naive,53.3,7.18,26.8,56.2,8.94,36.7,6.09,Blood,3
+July 8_FA161_005.fcs,Female,PFOA 0.166,46.1,3.6,41.6,52.4,5.72,41.7,5.04,Blood,3
+July 8_FA162_006.fcs,Female,PFOA 0.166,41.8,8.02,33.7,51.1,6.42,42.2,5.49,Blood,3
+July 9_FA163_030.fcs,Female,PFOA 0.166,43.5,8.4,32.8,55.6,6.64,38.3,4.9,Blood,3
+July 10_FA165_053.fcs,Female,PFOA 0.166,49.8,6.05,29.5,52.8,8.62,39.5,6.76,Blood,3
+July 10_FA166_054.fcs,Female,PFOA 0.166,38.1,7.45,38.4,55.6,7.05,38.4,4.99,Blood,3
+July 11_FA167_076.fcs,Female,PFOA 0.166,41.2,3.55,41.4,54.7,9.38,38.2,6.11,Blood,3
+July 11_FA168_077.fcs,Female,PFOA 0.166,45,6.5,30.7,54.9,8.82,38.2,5.91,Blood,3
+July 8_FA169_007.fcs,Female,PFOA 0.5,44.2,7.61,32.6,50.6,6.39,42,6.19,Blood,3
+July 8_FA170_008.fcs,Female,PFOA 0.5,42.9,9.23,34.2,49.1,5.73,45.3,4.65,Blood,3
+July 9_FA171_031.fcs,Female,PFOA 0.5,34.3,2.23,55.2,53.2,4.81,40.7,5.13,Blood,3
+July 9_FA172_032.fcs,Female,PFOA 0.5,50.7,5.06,34.3,56.2,6.94,38.4,4.66,Blood,3
+July 10_FA173_055.fcs,Female,PFOA 0.5,44.5,7.92,32.4,52,8.33,41.8,5.15,Blood,3
+July 10_FA174_056.fcs,Female,PFOA 0.5,43.7,7.09,37.7,53.7,5.99,40.4,4.92,Blood,3
+July 11_FA175_078.fcs,Female,PFOA 0.5,45.7,5.28,36.7,49.9,8.47,44,5.16,Blood,3
+July 11_FA176_079.fcs,Female,PFOA 0.5,51.1,5.14,32.5,55.9,8.98,37.9,5.17,Blood,3
+July 8_FA177_009.fcs,Female,PFOA 1,42.8,8.65,34.4,47.9,6.11,44.5,6.44,Blood,3
+July 8_FA178_010.fcs,Female,PFOA 1,35.2,15.2,30.8,51.6,6.33,41.5,5.6,Blood,3
+July 9_FA179_033.fcs,Female,PFOA 1,43.6,6.13,37.2,50.2,5.73,43.1,5.49,Blood,3
+July 9_FA180_034.fcs,Female,PFOA 1,48,9.24,29.4,52.4,8.62,40.6,5.9,Blood,3
+July 10_FA181_057.fcs,Female,PFOA 1,43,7.03,34.7,53.7,8.34,40.5,4.88,Blood,3
+July 10_FA182_058.fcs,Female,PFOA 1,31.2,11.8,33.5,50.6,7.38,42.8,5.49,Blood,3
+July 11_FA183_080.fcs,Female,PFOA 1,36.3,5.84,44.3,53.6,8.13,41.9,3.82,Blood,3
+July 11_FA184_081.fcs,Female,PFOA 1,45,7.65,31.4,53.9,9.2,40.9,4.26,Blood,3
+July 8_FA185_011.fcs,Female,PFOA 1.5,50.6,4.95,34,49.3,6.35,44.6,5.06,Blood,3
+July 8_FA186_012.fcs,Female,PFOA 1.5,40.3,9.74,35.3,50.9,5.76,42.7,5.36,Blood,3
+July 9_FA187_035.fcs,Female,PFOA 1.5,42.7,2.81,44.5,51.1,5.92,42.4,5.35,Blood,3
+July 9_FA188_036.fcs,Female,PFOA 1.5,40.1,9.85,33.4,48.3,7.6,45.2,5.37,Blood,3
+July 10_FA189_059.fcs,Female,PFOA 1.5,41.7,7.9,37.9,53.6,7.66,41.4,4.09,Blood,3
+July 10_FA190_060.fcs,Female,PFOA 1.5,41.4,9.12,33.4,52.8,8.86,40.9,5.14,Blood,3
+July 11_FA191_082.fcs,Female,PFOA 1.5,40.6,2.65,42.6,49.7,6.73,44.5,4.84,Blood,3
+July 11_FA192_083.fcs,Female,PFOA 1.5,46.9,8.45,28.8,53,9.87,38.9,6.72,Blood,3
+July 8_FS193_013.fcs,Female,PFOS 0.166,44.8,6.88,34.9,52.3,5.21,41,5.58,Blood,3
+July 8_FS194_014.fcs,Female,PFOS 0.166,42.6,9.34,33.4,52.8,6.06,39.2,6.79,Blood,3
+July 9_FS195_037.fcs,Female,PFOS 0.166,42,3.22,42.1,53.3,6.25,40.2,4.79,Blood,3
+July 9_FS196_038.fcs,Female,PFOS 0.166,47.6,8.97,27.4,54.9,7.32,38.5,5.42,Blood,3
+July 10_FS197_061.fcs,Female,PFOS 0.166,49.9,7.21,31.1,49.6,8.55,43.5,5.84,Blood,3
+July 10_FS198_062.fcs,Female,PFOS 0.166,44.5,6.81,34.3,54.5,8.46,40.1,4.54,Blood,3
+July 11_FS199_084.fcs,Female,PFOS 0.166,47.9,6.76,32.4,54.3,9.05,39.4,5.29,Blood,3
+July 11_FS200_085.fcs,Female,PFOS 0.166,41.9,7.96,31.8,50.8,7.27,42.8,5.4,Blood,3
+July 8_FS202_015.fcs,Female,PFOS 0.5,41.3,6.82,36.5,55.4,5.07,39.8,3.85,Blood,3
+July 9_FS203_039.fcs,Female,PFOS 0.5,49,6.6,33.9,52.2,8,41.1,5.54,Blood,3
+July 9_FS204_040.fcs,Female,PFOS 0.5,39.4,8.57,35.6,52.6,6.73,41,5.2,Blood,3
+July 10_FS205_063.fcs,Female,PFOS 0.5,50.6,5.85,29.5,52.1,8.8,40.7,5.96,Blood,3
+July 10_FS206_064.fcs,Female,PFOS 0.5,49.9,5.87,31.3,53.8,7.78,40.6,4.76,Blood,3
+July 11_FS207_086.fcs,Female,PFOS 0.5,47.4,5.8,33.8,51.8,7.56,42.6,4.73,Blood,3
+July 11_FS208_087.fcs,Female,PFOS 0.5,47.8,6.35,33.3,55.4,7.25,39.6,4.24,Blood,3
+July 8_FS209_016.fcs,Female,PFOS 1,48,7.67,33.2,50.8,7.1,43.8,4.44,Blood,3
+July 8_FS210_017.fcs,Female,PFOS 1,43.1,10.7,32.9,54.5,7.11,39.8,4.67,Blood,3
+July 8_FS217_018.fcs,Female,PFOS 1.5,51.4,3.94,31.2,49.7,6.19,43.8,5.46,Blood,3
+July 8_FS218_019.fcs,Female,PFOS 1.5,49.9,7.8,31.1,54,7.37,40.7,4.3,Blood,3
+July 9_FS211_041.fcs,Female,PFOS 1,37.8,9.63,38.1,52.1,7.06,42,4.8,Blood,3
+July 9_FS212_042.fcs,Female,PFOS 1,35.9,12.4,32.7,48.6,6.3,44.9,5.46,Blood,3
+July 9_FS219_043.fcs,Female,PFOS 1.5,48.4,10.4,27.3,54.9,8.03,39.1,4.95,Blood,3
+July 9_FS220_044.fcs,Female,PFOS 1.5,45,6.78,33.9,51.5,6.2,42.1,5.33,Blood,3
+July 10_FS213_065.fcs,Female,PFOS 1,43.1,7.68,33.5,52.1,8.27,42.4,4.67,Blood,3
+July 10_FS214_066.fcs,Female,PFOS 1,39.2,7.82,34.4,49.1,8.03,45.1,4.83,Blood,3
+July 10_FS221_067.fcs,Female,PFOS 1.5,49.6,6.08,29.6,52.5,8.63,40.5,5.82,Blood,3
+July 10_FS222_068.fcs,Female,PFOS 1.5,53.2,6.25,26.6,50.8,9.82,43.3,5.01,Blood,3
+July 11_FS215_088.fcs,Female,PFOS 1,43.5,7.75,34.4,51.1,8.1,42.7,5.05,Blood,3
+July 11_FS216_089.fcs,Female,PFOS 1,46.8,5.99,36.4,55,9.08,39.5,4.65,Blood,3
+July 11_FS223_090.fcs,Female,PFOS 1.5,40.9,9.28,32.6,53,9.54,40.1,5.75,Blood,3
+July 11_FS224_091.fcs,Female,PFOS 1,32.4,10.8,35.4,51.6,7.97,43,4.66,Blood,3
+July 8_FV153_003.fcs,Female,Vehicle,39.4,9.95,37.6,53.5,6.08,41.7,4.04,Blood,3
+July 8_FV154_004.fcs,Female,Vehicle,44.6,10.8,31.4,57.8,6.98,36.9,4.39,Blood,3
+July 9_FV155_028.fcs,Female,Vehicle,43,6.67,36.8,50,7.35,43.5,5.35,Blood,3
+July 9_FV156_029.fcs,Female,Vehicle,41.4,8.68,34.5,52.1,4.92,42.5,4.57,Blood,3
+July 10_FV157_051.fcs,Female,Vehicle,37.1,9.39,33.8,56.5,7.97,37.4,5.06,Blood,3
+July 10_FV158_052.fcs,Female,Vehicle,49.3,7.98,31.6,53.3,7.99,41.5,4.25,Blood,3
+July 11_FV159_074.fcs,Female,Vehicle,45.2,2.93,42.9,52.2,8.76,41.8,5.13,Blood,3
+July 11_FV160_075.fcs,Female,Vehicle,40.2,7.21,37.2,50.8,8.2,43.5,4.85,Blood,3

@@ -1,0 +1,161 @@
+﻿Sample:,Sex,group,Anti-SRBC IgM (U/mL)
+April 23_MN65_001.fcs,Male,Naive,1.56
+April 23_MN66_002.fcs,Male,Naive,1.56
+April 24_MN67_001.fcs,Male,Naive,1.56
+April 24_MN68_002.fcs,Male,Naive,1.56
+April 25_MN69_001.fcs,Male,Naive,1.56
+April 25_MN70_002.fcs,Male,Naive,1.56
+April 26_MN71_001.fcs,Male,Naive,1.56
+April 26_MN72_002.fcs,Male,Naive,1.56
+April 23_MV73_003.fcs,Male,Vehicle,479
+April 23_MV74_004.fcs,Male,Vehicle,1026
+April 24_MV75_003.fcs,Male,Vehicle,2542
+April 24_MV76_004.fcs,Male,Vehicle,931
+April 25_MV77_003.fcs,Male,Vehicle,398
+April 25_MV78_004.fcs,Male,Vehicle,644
+April 26_MV79_003.fcs,Male,Vehicle,101
+April 26_MV80_004.fcs,Male,Vehicle,59
+April 23_MA81_005.fcs,Male,PFOA 0.166,679
+April 23_MA82_006.fcs,Male,PFOA 0.166,61
+April 24_MA83_005.fcs,Male,PFOA 0.166,13
+April 24_MA84_006.fcs,Male,PFOA 0.166,427
+April 25_MA86_005.fcs,Male,PFOA 0.166,
+April 26_MA87_005.fcs,Male,PFOA 0.166,1255
+April 26_MA88_006.fcs,Male,PFOA 0.166,1.56
+April 26_MA88_006.fcs,Male,PFOA 0.166,1246
+April 23_MA89_007.fcs,Male,PFOA 0.5,763
+April 23_MA90_008.fcs,Male,PFOA 0.5,606
+April 24_MA91_007.fcs,Male,PFOA 0.5,1618
+April 24_MA92_008.fcs,Male,PFOA 0.5,1103
+April 25_MA93_006.fcs,Male,PFOA 0.5,943
+April 25_MA94_007.fcs,Male,PFOA 0.5,1207
+April 26_MA95_007.fcs,Male,PFOA 0.5,417
+April 26_MA96_008.fcs,Male,PFOA 0.5,864
+April 23_MA97_009.fcs,Male,PFOA 1,2187
+April 23_MA98_010.fcs,Male,PFOA 1,107
+April 23_MA99_010.fcs,Male,PFOA 1,
+April 24_MA100_009.fcs,Male,PFOA 1,760
+April 25_MA101_008.fcs,Male,PFOA 1,381
+April 25_MA102_009.fcs,Male,PFOA 1,1328
+April 26_MA103_009.fcs,Male,PFOA 1,1553
+April 26_MA104_010.fcs,Male,PFOA 1,1072
+April 23_MA105_011.fcs,Male,PFOA 1.5,1.56
+April 23_MA106_012.fcs,Male,PFOA 1.5,1.56
+April 23_MA107_012.fcs,Male,PFOA 1.5,
+April 24_MA108_010.fcs,Male,PFOA 1.5,871
+April 25_MA109_010.fcs,Male,PFOA 1.5,427
+April 25_MA110_011.fcs,Male,PFOA 1.5,527
+April 26_MA111_011.fcs,Male,PFOA 1.5,450
+April 26_MA112_012.fcs,Male,PFOA 1.5,840
+April 23_MS113_013.fcs,Male,PFOS 0.166,651
+April 23_MS114_014.fcs,Male,PFOS 0.166,1102
+April 24_MS115_011.fcs,Male,PFOS 0.166,2044
+April 24_MS116_012.fcs,Male,PFOS 0.166,487
+April 25_MS117_012.fcs,Male,PFOS 0.166,1391
+April 25_MS118_013.fcs,Male,PFOS 0.166,706
+April 26_MS119_013.fcs,Male,PFOS 0.166,342
+April 26_MS120_014.fcs,Male,PFOS 0.166,1711
+April 23_MS121_015.fcs,Male,PFOS 0.5,1196
+April 23_MS122_016.fcs,Male,PFOS 0.5,620
+April 24_MS123_013.fcs,Male,PFOS 0.5,400
+April 24_MS124_014.fcs,Male,PFOS 0.5,986
+April 25_MS125_014.fcs,Male,PFOS 0.5,700
+April 25_MS126_014.fcs,Male,PFOS 0.5,
+April 26_MS127_015.fcs,Male,PFOS 0.5,160
+April 26_MS128_016.fcs,Male,PFOS 0.5,537
+April 23_MS129_017.fcs,Male,PFOS 1,789
+April 23_MS130_018.fcs,Male,PFOS 1,875
+April 24_MS131_015.fcs,Male,PFOS 1,43
+April 24_MS132_016.fcs,Male,PFOS 1,105
+April 25_MS133_015.fcs,Male,PFOS 1,631
+April 25_MS134_016.fcs,Male,PFOS 1,245
+April 26_MS135_017.fcs,Male,PFOS 1,1.56
+April 26_MS136_018.fcs,Male,PFOS 1,57
+April 23_MS137_019.fcs,Male,PFOS 1.5,431
+April 23_MS138_020.fcs,Male,PFOS 1.5,458
+April 24_MS139_017.fcs,Male,PFOS 1.5,1.56
+April 24_MS140_018.fcs,Male,PFOS 1.5,894
+April 25_MS141_017.fcs,Male,PFOS 1.5,408
+April 25_MS142_018.fcs,Male,PFOS 1.5,614
+April 26_MS143_019.fcs,Male,PFOS 1.5,324
+April 26_MS144_020.fcs,Male,PFOS 1.5,367
+July 8_FN145_001.fcs,Female,Naive,1.56
+July 8_FN146_002.fcs,Female,Naive,17
+July 9_FN147_026.fcs,Female,Naive,1.56
+July 9_FN148_027.fcs,Female,Naive,17
+July 10_FN149_050.fcs,Female,Naive,193
+July 10_FN150_051.fcs,Female,Naive,5
+July 11_FN151_074.fcs,Female,Naive,27
+July 11_FN152_075.fcs,Female,Naive,71
+July 8_FV153_003.fcs,Female,Vehicle,991
+July 8_FV154_004.fcs,Female,Vehicle,1695
+July 9_FV155_028.fcs,Female,Vehicle,66
+July 9_FV156_029.fcs,Female,Vehicle,534
+July 10_FV157_052.fcs,Female,Vehicle,394
+July 10_FV158_053.fcs,Female,Vehicle,1246
+July 11_FV159_076.fcs,Female,Vehicle,1.56
+July 11_FV160_077.fcs,Female,Vehicle,1.56
+July 8_FA161_005.fcs,Female,PFOA 0.166,463
+July 8_FA162_006.fcs,Female,PFOA 0.166,816
+July 9_FA163_030.fcs,Female,PFOA 0.166,1162
+July 9_FA164_031.fcs,Female,PFOA 0.166,2054
+July 10_FA165_054.fcs,Female,PFOA 0.166,1001
+July 10_FA166_055.fcs,Female,PFOA 0.166,1.56
+July 11_FA167_078.fcs,Female,PFOA 0.166,754
+July 11_FA168_079.fcs,Female,PFOA 0.166,932
+July 8_FA169_007.fcs,Female,PFOA 0.5,1738
+July 8_FA170_008.fcs,Female,PFOA 0.5,872
+July 9_FA171_032.fcs,Female,PFOA 0.5,760
+July 9_FA172_033.fcs,Female,PFOA 0.5,1.56
+July 10_FA173_056.fcs,Female,PFOA 0.5,662
+July 10_FA174_057.fcs,Female,PFOA 0.5,1473
+July 11_FA175_080.fcs,Female,PFOA 0.5,948
+July 11_FA176_081.fcs,Female,PFOA 0.5,1210
+July 8_FA177_009.fcs,Female,PFOA 1,495
+July 8_FA178_010.fcs,Female,PFOA 1,484
+July 9_FA179_034.fcs,Female,PFOA 1,836
+July 9_FA180_035.fcs,Female,PFOA 1,665
+July 10_FA181_058.fcs,Female,PFOA 1,1384
+July 10_FA182_059.fcs,Female,PFOA 1,607
+July 11_FA183_082.fcs,Female,PFOA 1,1.56
+July 11_FA184_083.fcs,Female,PFOA 1,1019
+July 8_FA185_011.fcs,Female,PFOA 1.5,113
+July 8_FA186_012.fcs,Female,PFOA 1.5,1700
+July 9_FA187_036.fcs,Female,PFOA 1.5,319
+July 9_FA188_037.fcs,Female,PFOA 1.5,1.56
+July 10_FA189_060.fcs,Female,PFOA 1.5,1015
+July 10_FA190_061.fcs,Female,PFOA 1.5,1097
+July 11_FA191_084.fcs,Female,PFOA 1.5,831
+July 11_FA192_085.fcs,Female,PFOA 1.5,611
+July 9_FS195_038.fcs,Female,PFOS 0.166,452
+July 8_FS193_013.fcs,Female,PFOS 0.166,225
+July 8_FS194_014.fcs,Female,PFOS 0.166,1087
+July 9_FS196_039.fcs,Female,PFOS 0.166,368
+July 10_FS197_062.fcs,Female,PFOS 0.166,69
+July 10_FS198_063.fcs,Female,PFOS 0.166,814
+July 11_FS199_086.fcs,Female,PFOS 0.166,923
+July 11_FS200_087.fcs,Female,PFOS 0.166,351
+July 8_FS201_015.fcs,Female,PFOS 0.5,
+July 8_FS202_015.fcs,Female,PFOS 0.5,1128
+July 9_FS203_040.fcs,Female,PFOS 0.5,1160
+July 9_FS204_041.fcs,Female,PFOS 0.5,807
+July 10_FS205_064.fcs,Female,PFOS 0.5,1249
+July 10_FS206_065.fcs,Female,PFOS 0.5,17
+July 11_FS207_088.fcs,Female,PFOS 0.5,942
+July 11_FS208_089.fcs,Female,PFOS 0.5,638
+July 8_FS209_016.fcs,Female,PFOS 1,868
+July 8_FS210_017.fcs,Female,PFOS 1,881
+July 9_FS211_042.fcs,Female,PFOS 1,526
+July 9_FS212_043.fcs,Female,PFOS 1,82
+July 10_FS213_066.fcs,Female,PFOS 1,969
+July 10_FS214_067.fcs,Female,PFOS 1,12
+July 11_FS215_090.fcs,Female,PFOS 1,948
+July 11_FS216_091.fcs,Female,PFOS 1,702
+July 8_FS217_018.fcs,Female,PFOS 1.5,144
+July 8_FS218_019.fcs,Female,PFOS 1.5,1069
+July 9_FS219_044.fcs,Female,PFOS 1.5,1187
+July 9_FS220_045.fcs,Female,PFOS 1.5,442
+July 10_FS221_068.fcs,Female,PFOS 1.5,1169
+July 10_FS222_069.fcs,Female,PFOS 1.5,195
+July 11_FS223_092.fcs,Female,PFOS 1.5,711
+July 11_FS224_093.fcs,Female,PFOS 1.5,710

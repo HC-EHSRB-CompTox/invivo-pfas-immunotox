@@ -96,7 +96,7 @@ sig_female_non_parametric <- get_significance_non_parametric(data_female, "Femal
 sig_male_non_parametric <- get_significance_non_parametric(data_male, "Male")
 #Combine all pairwise comparisons
 significance_df_non_parametric <- bind_rows(sig_female_non_parametric, sig_male_non_parametric)
-
+print(significance_df_non_parametric)
 unique_markers <- unique(data_bio$Marker)
 
 for (m in unique(data_bio$Marker)) {
@@ -166,11 +166,139 @@ if (nrow(sig_data) > 0) {
       plot.margin = margin(t = 10, r = 10, b = 40, l = 10)
     )
 
-#ggsave(filename = paste0("plots/bio_boxplot_", gsub(" ", "_", m), ".png"),plot = plot,width = 8, height = 6,dpi = 300,bg = "white")
+#ggsave(filename = paste0("plots/bio_boxplot_", gsub(" ", "_", m), ".png"),plot = plot,width = 7, height = 5,dpi = 300,bg = "white")
 
   print(plot)
 }
 
+##########################################################################################################################
+#Dose-response curve
+#Define PFAS order and dose order
+custom_colors <- c("#0d0887", "#7e03a8", "#b52f8c", "#cc4778", "#de5f65","#ed7953", "#f89540", "#fdb42f")
+pfas_order <- c("PFOS", "PFOA")
+dose_levels <- c("Naive", "Vehicle", "0.166", "0.5", "1", "1.5")
+marker_levels <- c("ALP",	"ALT",	"CA",	"CHOL",	"FT4", "LDH","TBI",	"TGL")
+
+#Factor levels
+data_bio$PFAS <- factor(data_bio$PFAS, levels = pfas_order)
+data_bio$Dose <- factor(data_bio$Dose, levels = dose_levels)
+data_bio$Marker <- factor(data_bio$Marker, levels = marker_levels)
+
+n_markers <- length(unique(data_bio$Marker))
+n_sex <- length(unique(data_bio$Sex))
+n_pfas <- length(unique(data_bio$PFAS))
+tile_width_in <- 2.5
+tile_height_in <- 2.5
+plot_width <- n_markers * tile_width_in
+plot_height <- n_sex * n_pfas * tile_height_in
+
+#Compute summary stats with Sex
+summary_data <- data_bio %>%
+  group_by(Sex, PFAS, Marker, Dose) %>%
+  summarise(
+    median_stat = median(Value, na.rm = TRUE),
+    Q1 = quantile(Value, 0.25, na.rm = TRUE),
+    Q3 = quantile(Value, 0.75, na.rm = TRUE),
+    IQR = Q3 - Q1,
+    lower = median_stat - 1.5 * IQR,
+    upper = median_stat + 1.5 * IQR,
+    .groups = "drop"
+  ) %>%
+  mutate(
+    y_position_label = upper + 1,
+    Marker = factor(Marker, levels = marker_levels),
+    Dose_factor = factor(Dose, levels = dose_levels)
+  )
+#Join significance annotations
+summary_data <- summary_data %>%
+  left_join(
+    significance_df_non_parametric %>%
+      select(PFAS, Marker, group1, significance) %>%
+      rename(Dose = group1),
+    by = c("PFAS", "Marker", "Dose")
+  )
+vehicle_medians <- data_bio %>%
+  filter(Dose == "Vehicle") %>%
+  group_by(Sex, PFAS, Marker) %>%
+  summarise(vehicle_median = median(Value, na.rm = TRUE), .groups = "drop")
+summary_data <- summary_data %>%
+  left_join(vehicle_medians, by = c("Sex", "PFAS", "Marker"))
+
+#Split by sex
+data_male <- data_bio %>% filter(Sex == "Male")
+data_female <- data_bio %>% filter(Sex == "Female")
+summary_data_male <- summary_data %>% filter(Sex == "Male")
+summary_data_female <- summary_data %>% filter(Sex == "Female")
+
+#Plot
+make_plot_by_sex <- function(data, summary, sex_label) {
+  # Ensure necessary packages are used inside the function
+  summary_padded <- dplyr::left_join(
+    summary,
+    summary %>%
+      dplyr::group_by(Marker, PFAS) %>%
+      dplyr::summarise(max_val = max(upper, na.rm = TRUE), .groups = "drop") %>%
+      dplyr::mutate(y_pad = max_val * 1.5),
+    by = c("Marker", "PFAS")
+  )
+
+  ggplot() +
+    geom_jitter(
+      data = data,
+      aes(x = Dose, y = Value, color = Marker),
+      size = 1, alpha = 0.4, width = 0.2
+    ) +
+    geom_line(
+      data = summary,
+      aes(x = Dose_factor, y = median_stat, group = interaction(Marker, PFAS), color = Marker),
+      size = 0.8
+    ) +
+    geom_errorbar(
+      data = summary,
+      aes(x = Dose_factor, ymin = lower, ymax = upper, color = Marker),
+      width = 0.5
+    ) +
+    geom_hline(data = summary,
+      aes(yintercept = vehicle_median),
+      linetype = "dotted", size = 1, alpha = 0.4,
+      inherit.aes = FALSE) +
+
+    # Add invisible points to expand y-axis
+    geom_blank(data = summary_padded, aes(x = Dose_factor, y = y_pad)) +
+
+    facet_wrap(PFAS ~ Marker, scales = "free_y", nrow = 2) +
+    scale_color_manual(values = custom_colors) +
+    labs(
+      title = paste("Normalized Response (Median ± 1.5×IQR) -", sex_label),
+      x = NULL,
+      y = NULL,
+      color = "Marker"
+    ) +
+    theme_minimal() +
+    theme(
+      text = element_text(family = "Arial", size = 12),
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = "none",
+      panel.grid.major = element_line(size = 0.5),
+      panel.grid.minor = element_blank()
+    )
+}
+
+#Print plots
+plot_male <- make_plot_by_sex(data_male, summary_data_male, "Male")
+plot_female <- make_plot_by_sex(data_female, summary_data_female, "Female")
+print(plot_male)
+ggsave(filename = "../invivo-pfas-immunotox/R input 28d/plots/bio_dr_male_28.png", plot = plot_male,
+  width = plot_width,
+  height = 7,
+  dpi = 300,
+  bg = "white")
+print(plot_female)
+ggsave(filename = "../invivo-pfas-immunotox/R input 28d/plots/bio_dr_feamle_28.png", plot = plot_female,
+  width = plot_width,
+  height = 7,
+  dpi = 300,
+  bg = "white")
 ##########################################################################################################################
 #Normalize 
 data_bio <- data_bio %>%
@@ -239,7 +367,7 @@ sig_female_non_parametric <- get_significance_non_parametric(data_female, "Femal
 sig_male_non_parametric <- get_significance_non_parametric(data_male, "Male")
 #Combine all pairwise comparisons
 significance_df_non_parametric <- bind_rows(sig_female_non_parametric, sig_male_non_parametric)
-
+print(significance_df_non_parametric)
 for (m in unique(data_bio$Marker)) {
   plot_data <- data_bio %>%
     filter(Marker == m) %>%
@@ -308,7 +436,7 @@ if (nrow(sig_data) > 0) {
       plot.margin = margin(t = 10, r = 10, b = 40, l = 10)
     )
 
-#ggsave(filename = paste0("plots/bio_boxplot_norm_", gsub(" ", "_", m), ".png"),plot = norm_plot,width = 8, height = 6,dpi = 300,bg = "white")
+#ggsave(filename = paste0("plots/bio_boxplot_norm_", gsub(" ", "_", m), ".png"),plot = norm_plot,width = 7, height = 5,dpi = 300,bg = "white")
 
   print(norm_plot)
 }
@@ -346,237 +474,38 @@ scale_x_discrete(position = "top") +
     x = NULL,
     y = NULL
   ) +
-  theme_minimal(base_size = 11) +
+  theme_minimal(base_size = 12) +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 0),
-    panel.grid = element_blank(),
-    panel.border = element_blank(),
-    strip.text = element_text(face = "bold"))
+  text = element_text(size = 12, family = "Arial"),
+  axis.text.x = element_text(angle = 45, hjust = 0, size = 12),
+  axis.text.y = element_text(size = 12),
+  panel.grid = element_blank(),
+ strip.text = element_text(face = "bold", size = 12)
+)+ coord_fixed(ratio = 1)
+
 #Print
-ggsave(filename = "../invivo-pfas-immunotox/R input 28d/plots/bio_heatmap_28.png", plot = heatmap_bio, width = 7, height = 5, dpi = 300,bg = "white")
+n_markers <- length(unique(heatmap_with_sig$Marker))
+n_sex <- length(unique(heatmap_with_sig$Sex))
+n_pfas <- length(unique(heatmap_with_sig$PFAS))
+n_dose <- length(unique(heatmap_with_sig$Dose))
+tile_width_in <- 2.5
+tile_height_in <- 2.5
+plot_width <- n_markers * tile_width_in
+plot_height <- n_sex * n_dose * tile_height_in
+
+
+# Save plot with adjusted width
+ggsave(
+  filename = "../invivo-pfas-immunotox/R input 28d/plots/bio_heatmap.png",
+  plot = heatmap_bio,
+  width = plot_width,
+  height = plot_height,
+  dpi = 300,
+  bg = "white"
+)
 print(heatmap_bio)
-
-##########################################################################################################################
-#Dose-response curve
-#Define PFAS order and dose order
-custom_colors <- c("#0d0887", "#7e03a8", "#b52f8c", "#cc4778", "#de5f65","#ed7953", "#f89540", "#fdb42f")
-pfas_order <- c("PFOS", "PFOA")
-dose_levels <- c("Naive", "Vehicle", "0.166", "0.5", "1", "1.5")
-marker_levels <- c("ALP",	"ALT",	"CA",	"CHOL",	"FT4", "LDH","TBI",	"TGL")
-
-#Factor levels
-data_bio$PFAS <- factor(data_bio$PFAS, levels = pfas_order)
-data_bio$Dose <- factor(data_bio$Dose, levels = dose_levels)
-data_bio$Marker <- factor(data_bio$Marker, levels = marker_levels)
-
-#Compute summary stats with Sex
-mean_data <- data_bio %>%
-  group_by(Sex, PFAS, Dose, Marker) %>%
-  summarise(
-    mean_stat = median(normalized, na.rm = TRUE),
-    se_stat = std.error(normalized) * 2.365,  # 95% CI
-    .groups = "drop"
-  ) %>%
-  mutate(
-    Chemical = PFAS,
-    significance = NA_character_,
-    y_position_label = mean_stat + se_stat + 1,
-    Dose_factor = Dose)
-
-#Join significance annotations
-mean_data <- mean_data %>%
-  left_join(
-    significance_df_non_parametric %>%
-      select(PFAS, Marker, group1, significance) %>%
-      rename(Dose = group1),
-    by = c("PFAS", "Marker", "Dose")
-  ) %>%
-  mutate(
-    y_position_label = mean_stat + se_stat + 1)
-
-#Split by sex
-data_bio_male <- data_bio %>% filter(Sex == "Male")
-data_bio_female <- data_bio %>% filter(Sex == "Female")
-mean_data_male <- mean_data %>% filter(Sex == "Male")
-mean_data_female <- mean_data %>% filter(Sex == "Female")
-
-#Plot
-make_plot_by_sex <- function(data, summary, sex_label) {
-  ggplot() +
-    geom_jitter(
-      data = data,
-      aes(x = Dose, y = normalized, color = Marker),
-      size = 1, alpha = 0.4, width = 0.2
-    ) +
-    geom_line(
-      data = summary,
-      aes(x = Dose_factor, y = mean_stat, group = interaction(Marker, PFAS), color = Marker),
-      size = 0.8
-    ) +
-    geom_errorbar(
-      data = summary,
-      aes(x = Dose_factor, ymin = mean_stat - se_stat, ymax = mean_stat + se_stat, color = Marker),
-      width = 0.5
-    ) +
-    geom_hline(yintercept = 1, linetype = "dotted", size = 1, alpha = 0.4) +
-   # geom_text(
-   #   data = summary[!is.na(summary$significance.y), ],
-   #   aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
-   #   size = 6,
-   #   show.legend = FALSE
-   # ) +
-    facet_grid(PFAS ~ Marker, scales = "free") +
-    scale_color_manual(values = custom_colors) +
-    labs(
-      title = paste("Normalized Response -", sex_label),
-      x = NULL,
-      y = NULL,
-      color = "Marker"
-    ) +
-    theme_minimal() +
-    theme(
-      text = element_text(family = "Arial", size = 12),
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      legend.position = "bottom",
-      panel.grid.major = element_line(size = 0.5),
-      panel.grid.minor = element_blank()
-    )
-}
-
-#Print plots
-plot_male <- make_plot_by_sex(data_bio_male, mean_data_male, "Male")
-plot_female <- make_plot_by_sex(data_bio_female, mean_data_female, "Female")
-print(plot_male)
-ggsave(filename = "../invivo-pfas-immunotox/R input 28d/plots/bio_dr_male_28.png", plot = plot_male, width = 7, height = 5, dpi = 300,bg = "white")
-print(plot_female)
-ggsave(filename = "../invivo-pfas-immunotox/R input 28d/plots/bio_dr_feamle_28.png", plot = plot_female, width = 7, height = 5, dpi = 300,bg = "white")
 ```
 
-#Liver toxicity using real values
-```{r}
-#Read in df
-#If multiple RR used first (checked that they were similar)
-#Converted ug/kg to mg/kg for naive and vehicle first 
-
-
-data_conc <- read.csv("../invivo-pfas-immunotox/R input 28d/Liver PFAS values phase 1 28d.csv")
-data_bio <- read.csv("../invivo-pfas-immunotox/R input 28d/biochemistry 28d.csv")
-
-#cHECK WITH gONG
-data_conc$PFOA[data_conc$PFOA == "<MDL"] <- 0.078
-data_conc$PFOS[data_conc$PFOS == "<MDL"] <- 0.114
-
-# Rename column Sample. to Mouse ID
-data_bio <- data_bio %>%
-  rename(`Mouse.ID` = `Sample.`)
-data_combined <- data_bio %>%
-  left_join(
-    data_conc %>% select("Mouse.ID", "PFOA", "PFOS"), 
-    by = c("Mouse.ID" = "Mouse.ID"))
-
-#Pre-process
-data_combined <- data_combined %>%
-  mutate(group = if_else(group %in% c("Naive", "Vehicle"),
-                         paste("control", group),
-                         group))
-data_combined <- data_combined %>%
-  separate(group, into = c("PFAS", "Dose"), sep = " ", remove = FALSE)
-
-#Duplicate Naive and Vehicle for statistics
-controls <- data_combined %>%
-  filter(Dose %in% c("Naive", "Vehicle")) %>%
-  slice(rep(1:n(), each = 2)) %>%
-  mutate(PFAS = rep(c("PFOS", "PFOA"), times = n() / 2))
-
-#Making the the PFAS groups correct
-data_combined <- data_combined %>%
-  filter(!(Dose %in% c("Naive", "Vehicle"))) %>%
-  bind_rows(controls)
-
-data_combined <- data_combined %>%
-  pivot_longer(
-    cols = -c(Mouse.ID, Sex, group, PFAS, Dose, PFOA, PFOS),
-    names_to = "Marker",
-    values_to = "Value"
-  )
-
-#Removing NAs
-data_combined <- data_combined %>% filter(!is.na(Value))
-#Just making sure everything is numeric
-data_combined$Value <- as.numeric(data_combined$Value)
-
-##########################################################################################################################
-#Normalize 
-data_combined <- data_combined %>%
-  group_by(Sex, PFAS, Marker) %>%
-  mutate(vehicle_median = median(Value[Dose == "Vehicle"], na.rm = TRUE),
-         normalized = Value / vehicle_median,
-         percent_of_vehicle = (Value / vehicle_median) * 100) 
-##########################################################################################################################
-#Dose-response curve
-#Define PFAS order and dose order
-custom_colors <- c("#0d0887", "#7e03a8", "#b52f8c", "#cc4778", "#de5f65","#ed7953", "#f89540", "#fdb42f")
-pfas_order <- c("PFOS", "PFOA")
-dose_levels <- c("Naive", "Vehicle", "0.166", "0.5", "1", "1.5")
-marker_levels <- c("ALP",	"ALT",	"CA",	"CHOL",	"FT4", "LDH","TBI",	"TGL")
-
-#Factor levels
-data_combined$PFAS <- factor(data_combined$PFAS, levels = pfas_order)
-data_combined$Dose <- factor(data_combined$Dose, levels = dose_levels)
-data_combined$Marker <- factor(data_combined$Marker, levels = marker_levels)
-
-#Decided to remove Naive
-data_combined <- data_combined[data_combined$Dose != "Naive", ]
-
-
-# Filter for PFOS only
-data_pfos <- data_combined %>% 
-  filter(PFAS == "PFOS") %>% 
-  mutate(PFOS = as.numeric(as.character(PFOS)))  # ensure numeric
-ggplot(data_pfos, aes(x = log10(PFOS+1), y = normalized, color = Dose)) +
-  geom_smooth(method = "loess", se = TRUE, color = "black", size = 0.8, span = 2) +
-  geom_point(alpha = 0.6, size = 2, position = position_jitter(width = 0)) +
-  facet_wrap(Sex ~ Marker, scales = "free_y")+
-  scale_color_manual(values = custom_colors) +
-  scale_x_continuous() +  # ensures continuous numeric scale
-  labs(
-    title = "Response vs Measured PFOS Concentration",
-    x = "Measured PFOS (mg/kg)",
-    y = "Response Value",
-    color = "Dose"
-  ) +
-  theme_minimal() +
-  theme(
-    text = element_text(family = "Arial", size = 12),
-    axis.text.x = element_text(angle = 45, hjust = 1)  # better readability
-  )
-
-# Filter for PFOA only
-data_pfao <- data_combined %>% 
-  filter(PFAS == "PFOA") %>% 
-  mutate(PFOA = as.numeric(as.character(PFOA)))  # ensure numeric
-ggplot(data_pfao, aes(x = log10(PFOA+1), y = normalized, color = Dose)) +
-   geom_smooth(method = "loess", se = TRUE, color = "black", size = 0.8, span = 2) +
-  geom_point(alpha = 0.6, size = 2, position = position_jitter(width = 0)) +
-  facet_wrap(Sex ~ Marker, scales = "free_y") +
-  scale_color_manual(values = custom_colors) +
-  scale_x_continuous() +  # ensures continuous numeric scale
-  labs(
-    title = "Response vs Measured PFOA Concentration",
-    x = "Measured PFOA (mg/kg)",
-    y = "Normalized to vehicle (pg/ml)",
-    color = "Dose"
-  ) +
-  theme_minimal() +
-  theme(
-    text = element_text(family = "Arial", size = 12),
-    axis.text.x = element_text(angle = 45, hjust = 1)  # better readability
-  )
-
-#Print plots
-#ggsave(filename = "plots/bio_dr_male.png", plot = plot_male, width = 7, height = 5, dpi = 300,bg = "white")
-#ggsave(filename = "plots/bio_dr_feamle.png", plot = plot_female, width = 7, height = 5, dpi = 300,bg = "white")
-```
 
 #Tissue weight stats and plot
 ```{r}
@@ -676,7 +605,7 @@ sig_female_non_parametric <- get_significance_non_parametric(data_female, "Femal
 sig_male_non_parametric <- get_significance_non_parametric(data_male, "Male")
 #Combine all pairwise comparisons
 significance_df_non_parametric <- bind_rows(sig_female_non_parametric, sig_male_non_parametric)
-
+print(significance_df_non_parametric)
 unique_markers <- unique(data_tissue$Marker)
 
 for (m in unique(data_tissue$Marker)) {
@@ -746,11 +675,142 @@ if (nrow(sig_data) > 0) {
       plot.margin = margin(t = 10, r = 10, b = 40, l = 10)
     )
 
-#ggsave(filename = paste0("plots/tissue_boxplot_", gsub(" ", "_", m), ".png"),plot = plot,width = 8, height = 6,dpi = 300,bg = "white")
+#ggsave(filename = paste0("plots/tissue_boxplot_", gsub(" ", "_", m), ".png"),plot = plot,width = 7, height = 5,dpi = 300,bg = "white")
 
   print(plot)
 }
 
+##########################################################################################################################
+#Dose-response curve
+#Define PFAS order and dose order
+custom_colors <- c("#330597", "#8405a7", "#b12a90", "#d35171", "#f68f44", "#fec029")
+pfas_order <- c("PFOS", "PFOA")
+dose_levels <- c("Naive", "Vehicle", "0.166", "0.5", "1", "1.5")
+marker_levels <- c("Liver", "Pancreas", "Spleen", "Thymus", "Kidneys", "GI.Tract")
+
+#Factor levels
+data_tissue$PFAS <- factor(data_tissue$PFAS, levels = pfas_order)
+data_tissue$Dose <- factor(data_tissue$Dose, levels = dose_levels)
+data_tissue$Marker <- factor(data_tissue$Marker, levels = marker_levels)
+
+n_markers <- length(unique(data_tissue$Marker))
+n_sex <- length(unique(data_tissue$Sex))
+n_pfas <- length(unique(data_tissue$PFAS))
+tile_width_in <- 2.5
+tile_height_in <- 2.5
+plot_width <- n_markers * tile_width_in
+plot_height <- n_sex * n_pfas * tile_height_in
+
+#Compute summary stats with Sex
+summary_data <- data_tissue %>%
+  group_by(Sex, PFAS, Marker, Dose) %>%
+  summarise(
+    median_stat = median(Value, na.rm = TRUE),
+    Q1 = quantile(Value, 0.25, na.rm = TRUE),
+    Q3 = quantile(Value, 0.75, na.rm = TRUE),
+    IQR = Q3 - Q1,
+    lower = median_stat - 1.5 * IQR,
+    upper = median_stat + 1.5 * IQR,
+    .groups = "drop"
+  ) %>%
+  mutate(
+    y_position_label = upper + 1,
+    Marker = factor(Marker, levels = marker_levels),
+    Dose_factor = factor(Dose, levels = dose_levels)
+  )
+#Join significance annotations
+summary_data <- summary_data %>%
+  left_join(
+    significance_df_non_parametric %>%
+      select(PFAS, Marker, group1, significance) %>%
+      rename(Dose = group1),
+    by = c("PFAS", "Marker", "Dose")
+  )
+vehicle_medians <- data_tissue %>%
+  filter(Dose == "Vehicle") %>%
+  group_by(Sex, PFAS, Marker) %>%
+  summarise(vehicle_median = median(Value, na.rm = TRUE), .groups = "drop")
+summary_data <- summary_data %>%
+  left_join(vehicle_medians, by = c("Sex", "PFAS", "Marker"))
+
+#Split by sex
+data_male <- data_tissue %>% filter(Sex == "Male")
+data_female <- data_tissue %>% filter(Sex == "Female")
+summary_data_male <- summary_data %>% filter(Sex == "Male")
+summary_data_female <- summary_data %>% filter(Sex == "Female")
+summary_data$Marker <- factor(summary_data$Marker, levels = marker_levels)
+summary_data_female$Marker <- factor(summary_data_female$Marker, levels = marker_levels)
+summary_data_male$Marker <- factor(summary_data_male$Marker, levels = marker_levels)
+
+#Plot
+make_plot_by_sex <- function(data, summary, sex_label) {
+  # Ensure necessary packages are used inside the function
+  summary_padded <- dplyr::left_join(
+    summary,
+    summary %>%
+      dplyr::group_by(Marker, PFAS) %>%
+      dplyr::summarise(max_val = max(upper, na.rm = TRUE), .groups = "drop") %>%
+      dplyr::mutate(y_pad = max_val * 1.5),
+    by = c("Marker", "PFAS")
+  )
+
+  ggplot() +
+    geom_jitter(
+      data = data,
+      aes(x = Dose, y = Value, color = Marker),
+      size = 1, alpha = 0.4, width = 0.2
+    ) +
+    geom_line(
+      data = summary,
+      aes(x = Dose_factor, y = median_stat, group = interaction(Marker, PFAS), color = Marker),
+      size = 0.8
+    ) +
+    geom_errorbar(
+      data = summary,
+      aes(x = Dose_factor, ymin = lower, ymax = upper, color = Marker),
+      width = 0.5
+    ) +
+    geom_hline(data = summary,
+      aes(yintercept = vehicle_median),
+      linetype = "dotted", size = 1, alpha = 0.4,
+      inherit.aes = FALSE) +
+
+    # Add invisible points to expand y-axis
+    geom_blank(data = summary_padded, aes(x = Dose_factor, y = y_pad)) +
+
+    facet_wrap(PFAS ~ Marker, scales = "free_y", nrow = 2) +
+    scale_color_manual(values = custom_colors) +
+    labs(
+      title = paste("Normalized Response (Median ± 1.5×IQR) -", sex_label),
+      x = NULL,
+      y = NULL,
+      color = "Marker"
+    ) +
+    theme_minimal() +
+    theme(
+      text = element_text(family = "Arial", size = 12),
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = "none",
+      panel.grid.major = element_line(size = 0.5),
+      panel.grid.minor = element_blank()
+    )
+}
+
+#Print plots
+plot_male <- make_plot_by_sex(data_male, summary_data_male, "Male")
+plot_female <- make_plot_by_sex(data_female, summary_data_female, "Female")
+print(plot_male)
+ggsave(filename = "../invivo-pfas-immunotox/R input 28d/plots/tissue_dr_male.png", plot = plot_male,
+  width = plot_width,
+  height = 7,
+  dpi = 300,
+  bg = "white")
+print(plot_female)
+ggsave(filename = "../invivo-pfas-immunotox/R input 28d/plots/tissue_dr_feamle.png", plot = plot_female,
+  width = plot_width,
+  height = 7,
+  dpi = 300,
+  bg = "white")
 ##########################################################################################################################
 #Normalize 
 data_tissue <- data_tissue %>%
@@ -819,7 +879,7 @@ sig_female_non_parametric <- get_significance_non_parametric(data_female, "Femal
 sig_male_non_parametric <- get_significance_non_parametric(data_male, "Male")
 #Combine all pairwise comparisons
 significance_df_non_parametric <- bind_rows(sig_female_non_parametric, sig_male_non_parametric)
-
+print(significance_df_non_parametric)
 for (m in unique(data_tissue$Marker)) {
   plot_data <- data_tissue %>%
     filter(Marker == m) %>%
@@ -888,7 +948,7 @@ if (nrow(sig_data) > 0) {
       plot.margin = margin(t = 10, r = 10, b = 40, l = 10)
     )
 
-#ggsave(filename = paste0("plots/tissue_boxplot_norm_", gsub(" ", "_", m), ".png"),plot = norm_plot,width = 8, height = 6,dpi = 300,bg = "white")
+#ggsave(filename = paste0("plots/tissue_boxplot_norm_", gsub(" ", "_", m), ".png"),plot = norm_plot,width = 7, height = 5,dpi = 300,bg = "white")
 
   print(norm_plot)
 }
@@ -926,114 +986,117 @@ scale_x_discrete(position = "top") +
     x = NULL,
     y = NULL
   ) +
-  theme_minimal(base_size = 11) +
+  theme_minimal(base_size = 12) +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 0),
-    panel.grid = element_blank(),
-    panel.border = element_blank(),
-    strip.text = element_text(face = "bold"))
+  text = element_text(size = 12, family = "Arial"),
+  axis.text.x = element_text(angle = 45, hjust = 0, size = 12),
+  axis.text.y = element_text(size = 12),
+  panel.grid = element_blank(),
+ strip.text = element_text(face = "bold", size = 12)
+)+ coord_fixed(ratio = 1)
 
 #Print
-ggsave(filename = "plots/tissue_heatmap.png", plot = heatmap_tissue, width = 7, height = 5, dpi = 300,bg = "white")
+n_markers <- length(unique(heatmap_with_sig$Marker))
+n_sex <- length(unique(heatmap_with_sig$Sex))
+n_pfas <- length(unique(heatmap_with_sig$PFAS))
+tile_width_in <- 2.5
+tile_height_in <- 2.5
+plot_width <- n_markers * tile_width_in
+plot_height <- n_sex * n_pfas * tile_height_in
+
+
+# Save plot with adjusted width
+ggsave(
+  filename = "../invivo-pfas-immunotox/R input 28d/plots/tissue_heatmap.png",
+  plot = heatmap_tissue,
+  width = plot_width,
+  height = 7,
+  dpi = 300,
+  bg = "white"
+)
 print(heatmap_tissue)
-
-##########################################################################################################################
-#Dose-response curve
-#Define PFAS order and dose order
-custom_colors <- c("#330597", "#8405a7", "#b12a90", "#d35171", "#f68f44", "#fec029")
-pfas_order <- c("PFOS", "PFOA")
-dose_levels <- c("Naive", "Vehicle", "0.166", "0.5", "1", "1.5")
-marker_levels <- c("Liver", "Pancreas", "Spleen", "Thymus", "Kidneys", "GI.Tract")
-
-#Factor levels
-data_tissue$PFAS <- factor(data_tissue$PFAS, levels = pfas_order)
-data_tissue$Dose <- factor(data_tissue$Dose, levels = dose_levels)
-data_tissue$Marker <- factor(data_tissue$Marker, levels = marker_levels)
-
-#Compute summary stats with Sex
-mean_data <- data_tissue %>%
-  group_by(Sex, PFAS, Dose, Marker) %>%
-  summarise(
-    mean_stat = median(normalized, na.rm = TRUE),
-    se_stat = std.error(normalized) * 2.365,  # 95% CI
-    .groups = "drop"
-  ) %>%
-  mutate(
-    Chemical = PFAS,
-    significance = NA_character_,
-    y_position_label = mean_stat + se_stat + 0.5,
-    Dose_factor = Dose)
-
-#Join significance annotations
-mean_data <- mean_data %>%
-  left_join(
-    significance_df_non_parametric %>%
-      select(PFAS, Marker, group1, significance) %>%
-      rename(Dose = group1),
-    by = c("PFAS", "Marker", "Dose")
-  ) 
-mean_data <- mean_data %>%
-  mutate(
-    Marker = factor(Marker, levels = marker_levels),
-    Dose_factor = factor(Dose_factor, levels = dose_levels)
-  )
-#Split by sex
-data_tissue_male <- data_tissue %>% filter(Sex == "Male")
-data_tissue_female <- data_tissue %>% filter(Sex == "Female")
-mean_data_male <- mean_data %>% filter(Sex == "Male")
-mean_data_female <- mean_data %>% filter(Sex == "Female")
-
-#Plot
-make_plot_by_sex <- function(data, summary, sex_label) {
-  ggplot() +
-    geom_jitter(data = data,
-  aes(x = Dose, y = normalized, color = Marker),
-  size = 1, alpha = 0.4,
-  position = position_dodge(width = 0.2)) +
-    geom_line(
-      data = summary,
-      aes(x = Dose_factor, y = mean_stat, group = interaction(Marker, PFAS), color = Marker),
-      size = 0.8
-    ) +
-    geom_errorbar(
-      data = summary,
-      aes(x = Dose_factor, ymin = mean_stat - se_stat, ymax = mean_stat + se_stat, color = Marker),
-      width = 0.5
-    ) +
-    geom_hline(yintercept = 1, linetype = "dotted", size = 1, alpha = 0.4) +
-   # geom_text(
-   #   data = summary[!is.na(summary$significance.y), ],
-   #   aes(x = Dose_factor, y = y_position_label, label = significance.y, color = Marker),
-   #   size = 6,
-   #   show.legend = FALSE
-   # ) +
-    facet_grid(PFAS ~ Marker, scales = "free_y") +
-    scale_color_manual(values = custom_colors) +
-    labs(
-      title = paste("Normalized Response -", sex_label),
-      x = NULL,
-      y = NULL,
-      color = "Marker"
-    ) +
-    theme_minimal() +
-    theme(
-      text = element_text(family = "Arial", size = 12),
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      legend.position = "bottom",
-      panel.grid.major = element_line(size = 0.5),
-      panel.grid.minor = element_blank()
-    )
-}
-
-#Print plots
-plot_male <- make_plot_by_sex(data_tissue_male, mean_data_male, "Male")
-plot_female <- make_plot_by_sex(data_tissue_female, mean_data_female, "Female")
-print(plot_male)
-ggsave(filename = "../invivo-pfas-immunotox/R input 28d/plots/tissue_dr_male.png", plot = plot_male, width = 20, height = 7, dpi = 300,bg = "white")
-print(plot_female)
-ggsave(filename = "../invivo-pfas-immunotox/R input 28d/plots/tissue_dr_feamle.png", plot = plot_female, width = 7, height = 5, dpi = 300,bg = "white")
 ```
 
+#Liver conc
+```{r}
+#Read in df
+#If multiple RR used first (checked that they were similar)
+#Converted ug/kg to mg/kg for naive and vehicle first 
+data_conc <- read.csv("../invivo-pfas-immunotox/R input 28d/Liver PFAS values phase 1 28d.csv")
+
+#cHECK WITH gONG
+mdls <- c(
+  PFOA = 0.156, PFOS = 0.230, PFBA = 0.078, PFPeA = 0.085, PFHxA = 0.115,
+  PFHpA = 0.047, PFNA = 0.153, PFDA = 0.206, PFUdA = 0.074, PFDoA = 0.115,
+  PFTrDA = 0.105, PFTeDA = 0.112, PFBS = 0.150, PFPeS = 0.253, PFHxS = 0.155,
+  PFHpS = 0.186, PFNS = 0.164, PFDS = 0.262, `X4_2.FTS` = 0.074, `X6_2_FTS` = 0.276,
+  `X8_2.FTS` = 0.271, N.MeFOSAA = 0.291, N.EtFOSAA = 0.171, FOSA = 0.103
+)
+for (pfas_name in names(mdls)) {
+  if (pfas_name %in% colnames(data_conc)) {
+    data_conc[[pfas_name]][data_conc[[pfas_name]] == "<MDL"] <- mdls[[pfas_name]] / 2
+  }
+}
+
+pfas_cols <- c(
+  "PFOA", "PFOS", "PFBA", "PFPeA", "PFHxA", "PFHpA", "PFNA", "PFDA", "PFUdA", "PFDoA", "PFTrDA", "PFTeDA",
+  "PFBS", "PFPeS", "PFHxS", "PFHpS", "PFNS", "PFDS",
+  "X4_2.FTS", "X6_2_FTS", "X8_2.FTS", "N.MeFOSAA", "N.EtFOSAA", "FOSA"
+)
+
+# Generate plasma palette for other PFAS names (excluding PFOS, PFOA)
+other_pfas <- setdiff(pfas_cols, c("PFOS", "PFOA"))
+plasma_colors <- viridis(length(other_pfas), option = "plasma")
+names(plasma_colors) <- other_pfas
+
+# Define custom colors with bright red for PFOS and bright pink for PFOA
+custom_colors <- c(
+  "PFOS" = "red",    # Bright red
+  "PFOA" = "blue",    # Bright pink (hot pink)
+  plasma_colors          # Other PFAS use plasma
+)
+
+# Define order for x-axis
+group_levels <- c(
+  "Naive", "Vehicle",
+  paste("PFOS", c("0.166", "0.5", "1", "1.5")),
+  paste("PFOA", c("0.166", "0.5", "1", "1.5"))
+)
+
+# Data prep
+data_combined_long <- data_conc %>%
+  pivot_longer(
+    cols = all_of(pfas_cols),
+    names_to = "PFAS_name",
+    values_to = "PFAS_conc"
+  ) %>%
+  filter(!is.na(PFAS_conc)) %>%
+  mutate(
+    PFAS_conc = as.numeric(PFAS_conc),
+    group = factor(Group, levels = group_levels),
+    PFAS_name = factor(PFAS_name, levels = names(custom_colors)) 
+  )
+
+# Plot
+p <-ggplot(data_combined_long, aes(x = group, y = PFAS_conc, color =  PFAS_name)) +
+    geom_jitter(alpha = 0.7, size = 2.2, width = 0.2, height = 0) +
+  facet_wrap(vars(Sex), scales = "free_y") + 
+  scale_color_manual(values = custom_colors) +
+  labs(
+    x = "Group",
+    y = "Liver PFAS concentration (mg/kg)",
+    color = "PFAS"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Arial", size = 12),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "right"
+  )
+print(p)
+ggsave(filename = "../invivo-pfas-immunotox/R input 28d/plots/liver_conc.png", plot = p, width = 10, height = 5, dpi = 300,bg = "white")
+
+```
 
 #Body weight
 ```{r}
@@ -1127,7 +1190,7 @@ sig_male_pfoa   <- get_significance_non_parametric(data_male %>% filter(PFAS == 
 significance_df_non_parametric <- bind_rows(
   sig_female_pfos, sig_female_pfoa, sig_male_pfos, sig_male_pfoa
 )
-
+print(significance_df_non_parametric)
 #Summary 
 summary_stats <- data_bw %>%
   group_by(Sex, PFAS, Dose, Marker) %>%
@@ -1144,8 +1207,8 @@ summary_stats <- data_bw %>%
   )
 
 female_colors <- c(
-  "Naive"   = "black",
-"Vehicle" = "#fee2e2",
+  "Naive"   = "#fee2e2",
+"Vehicle" = "black",
 "0.166"   = "#fecaca",
 "0.5"     = "#fca5a5",
 "1"       = "#f87171",
@@ -1153,8 +1216,8 @@ female_colors <- c(
 )
 
 male_colors <- c(
-  "Naive"   = "black",
-"Vehicle" = "#eff6ff",
+  "Naive"   = "#eff6ff",
+"Vehicle" = "black",
 "0.166"   = "#bfdbfe",
 "0.5"     = "#93c5fd",
 "1"       = "#60a5fa",
@@ -1279,7 +1342,7 @@ sig_male_pfoa   <- get_significance_non_parametric(data_male %>% filter(PFAS == 
 significance_df_non_parametric <- bind_rows(
   sig_female_pfos, sig_female_pfoa, sig_male_pfos, sig_male_pfoa
 )
-
+print(significance_df_non_parametric)
 # Summary
 summary_stats <- data_water %>%
   group_by(Sex, PFAS, Dose, Marker) %>%
@@ -1296,22 +1359,17 @@ summary_stats <- data_water %>%
   )
 
 female_colors <- c(
-"Naive"   = "black",
-"Vehicle" = "#fee2e2",
-"0.166"   = "#fecaca",
-"0.5"     = "#fca5a5",
-"1"       = "#f87171",
+  "Naive"   = "#fee2e2",
+"Vehicle" = "black",
 "1.5"     = "#e53e3e"
 )
 
 male_colors <- c(
-  "Naive"   = "black",
-"Vehicle" = "#eff6ff",
-"0.166"   = "#bfdbfe",
-"0.5"     = "#93c5fd",
-"1"       = "#60a5fa",
+  "Naive"   = "#eff6ff",
+"Vehicle" = "black",
 "1.5"     = "#3b82f6"
 )
+
 
 dose_levels <- names(female_colors)
 

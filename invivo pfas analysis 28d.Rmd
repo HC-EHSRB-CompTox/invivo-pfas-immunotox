@@ -81,6 +81,7 @@ if (!is.na(kw_test$p.value) && kw_test$p.value < 0.05) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -147,6 +148,7 @@ get_significance_non_parametric <- function(data, sex_label) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -195,7 +197,7 @@ heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("ALP",	"AL
 heatmap_bio <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 4),  oob = scales::squish 
@@ -276,7 +278,7 @@ summary_data <- summary_data %>%
   left_join(
     significance_df_non_parametric %>%
       dplyr::select(PFAS, Marker, group1, significance) %>%
-      rename(Dose = group1),
+      dplyr::rename(Dose = group1),
     by = c("PFAS", "Marker", "Dose")
   )
 vehicle_medians <- data_bio %>%
@@ -411,6 +413,7 @@ if (!is.na(kw_test$p.value) && kw_test$p.value < 0.05) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -475,6 +478,7 @@ get_significance_non_parametric <- function(data, sex_label) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -522,7 +526,7 @@ heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("Liver", "
 heatmap_tissue <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 2),  oob = scales::squish 
@@ -602,7 +606,7 @@ summary_data <- summary_data %>%
   left_join(
     significance_df_non_parametric %>%
       dplyr::select(PFAS, Marker, group1, significance) %>%
-      rename(Dose = group1),
+      dplyr::rename(Dose = group1),
     by = c("PFAS", "Marker", "Dose")
   )
 vehicle_medians <- data_tissue %>%
@@ -749,7 +753,7 @@ data_conc[data_conc$Group %in% c("Naive", "Vehicle"), pfas_cols] <-
 data_conc_subset <- data_conc %>%
   dplyr::select(Mouse.ID, Sex, Group, all_of(pfas_cols))
 
-#write.csv(data_conc, file = "../invivo-pfas-immunotox/R input 28d/Liver_PFAS_values_fixed_28d.csv", row.names = FALSE)
+write.csv(data_conc, file = "../invivo-pfas-immunotox/R input 28d/Liver_PFAS_values_fixed_28d.csv", row.names = FALSE)
 
 other_pfas <- setdiff(pfas_cols, c("PFOS", "PFOA"))
 plasma_colors <- viridis(length(other_pfas), option = "plasma")
@@ -779,7 +783,15 @@ data_combined_long <- data_conc %>%
     group = factor(Group, levels = group_levels),
     PFAS_name = factor(PFAS_name, levels = names(custom_colors)) 
   )
+average_pfas <- data_conc %>%
+  group_by(Group) %>%
+  summarise(
+    Mean_PFOS = format(mean(PFOS, na.rm = TRUE), scientific = FALSE),
+    Mean_PFOA = format(mean(PFOA, na.rm = TRUE), scientific = FALSE),
+    .groups = "drop"
+  )
 
+print(average_pfas)
 p <-ggplot(data_combined_long, aes(x = group, y = PFAS_conc, color =  PFAS_name, shape= Sex)) +
     geom_jitter(alpha = 0.7, size = 2.2, width = 0.2, height = 0) +
   scale_color_manual(values = custom_colors) +
@@ -882,7 +894,7 @@ pfas_cols <- unique(mdls_df$PFAS)
 data_conc_subset <- data_conc %>%
   dplyr::select(Mouse.ID, Sex, Group, all_of(pfas_cols))
 
-#write.csv(data_conc, file = "../invivo-pfas-immunotox/R input 28d/Liver_PFAS_values_fixed_28d.csv", row.names = FALSE)
+write.csv(data_conc, file = "../invivo-pfas-immunotox/R input 28d/plasma_PFAS_values_fixed_28d.csv", row.names = FALSE)
 
 other_pfas <- setdiff(pfas_cols, c("PFOS", "PFOA"))
 plasma_colors <- viridis(length(other_pfas), option = "plasma")
@@ -912,7 +924,14 @@ data_combined_long <- data_conc %>%
     group = factor(Group, levels = group_levels),
     PFAS_name = factor(PFAS_name, levels = names(custom_colors)) 
   )
-
+average_pfas <- data_conc %>%
+  group_by(Group) %>%
+  summarise(
+    Mean_PFOS = format(mean(PFOS, na.rm = TRUE), scientific = FALSE),
+    Mean_PFOA = format(mean(PFOA, na.rm = TRUE), scientific = FALSE),
+    .groups = "drop"
+  )
+print(average_pfas)
 # Plot
 p <-ggplot(data_combined_long, aes(x = group, y = PFAS_conc, color =  PFAS_name, shape= Sex)) +
     geom_jitter(alpha = 0.7, size = 2.2, width = 0.2, height = 0) +
@@ -996,6 +1015,7 @@ get_significance_non_parametric <- function(data, sex_label) {
             P.adj < 0.001 ~ "***",
             P.adj < 0.01 ~ "**",
             P.adj < 0.05 ~ "*",
+            P.adj >= 0.05 & P.adj < 0.099 ~ ".",
             TRUE ~ "ns"
           ),
           PFAS = chem,
@@ -1147,6 +1167,7 @@ get_significance_non_parametric <- function(data, sex_label) {
             P.adj < 0.001 ~ "***",
             P.adj < 0.01 ~ "**",
             P.adj < 0.05 ~ "*",
+            P.adj >= 0.05 & P.adj < 0.099 ~ ".",
             TRUE ~ "ns"
           ),
           PFAS = chem,

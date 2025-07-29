@@ -86,6 +86,7 @@ if (!is.na(kw_test$p.value) && kw_test$p.value < 0.05) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -148,6 +149,7 @@ get_significance_non_parametric <- function(data, sex_label) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -195,7 +197,7 @@ colnames(data_spleen)
 heatmap_spleen <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 1.5),  oob = scales::squish 
@@ -281,7 +283,7 @@ summary_data <- summary_data %>%
   left_join(
     significance_df_non_parametric %>%
       dplyr::select(PFAS, Marker, group1, significance) %>%
-      rename(Dose = group1),
+      dplyr::rename(Dose = group1),
     by = c("PFAS", "Marker", "Dose")
   )
 vehicle_medians <- data_spleen %>%
@@ -420,6 +422,7 @@ if (!is.na(kw_test$p.value) && kw_test$p.value < 0.05) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -484,6 +487,7 @@ get_significance_non_parametric <- function(data, sex_label) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -532,7 +536,7 @@ heatmap_with_sig$Dose <- factor(heatmap_with_sig$Dose, levels = c( "1.5", "1", "
 heatmap_blood <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2, color = "black") +
-  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 1.5),  oob = scales::squish 
@@ -618,7 +622,7 @@ summary_data <- summary_data %>%
   left_join(
     significance_df_non_parametric %>%
       dplyr::select(PFAS, Marker, group1, significance) %>%
-      rename(Dose = group1),
+      dplyr::rename(Dose = group1),
     by = c("PFAS", "Marker", "Dose")
   )
 vehicle_medians <- data_blood %>%
@@ -687,7 +691,7 @@ ggsave(filename = "../invivo-pfas-immunotox/R input 56d/plots/blood_dr.png", plo
   dpi = 300,
   bg = "white")
 replicate_summary <- data_blood%>%
-  group_by(Sex, Dose, PFAS, Marker) %>%   variables
+  group_by(Sex, Dose, PFAS, Marker) %>%   
   summarise(n = n(), .groups = "drop")
 
 
@@ -758,6 +762,7 @@ if (!is.na(kw_test$p.value) && kw_test$p.value < 0.05) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -794,7 +799,6 @@ data_thymus <- data_thymus %>%
 data_female <- data_thymus %>% filter(Sex == "Female")
 data_male <- data_thymus %>% filter(Sex == "Male")
 
- comparisons
 get_significance_non_parametric <- function(data, sex_label) {
   results <- list()
   
@@ -822,6 +826,7 @@ get_significance_non_parametric <- function(data, sex_label) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -869,7 +874,7 @@ heatmap_with_sig$Dose <- factor(heatmap_with_sig$Dose, levels = c( "1.5", "1", "
 heatmap_thymus <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 2),  oob = scales::squish 
@@ -950,7 +955,7 @@ summary_data <- summary_data %>%
   left_join(
     significance_df_non_parametric %>%
       dplyr::select(PFAS, Marker, group1, significance) %>%
-      rename(Dose = group1),
+      dplyr::rename(Dose = group1),
     by = c("PFAS", "Marker", "Dose")
   )
 vehicle_medians <- data_thymus %>%
@@ -1087,6 +1092,7 @@ if (!is.na(kw_test$p.value) && kw_test$p.value < 0.05) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -1149,6 +1155,7 @@ get_significance_non_parametric <- function(data, sex_label) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+              P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -1198,7 +1205,7 @@ heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("G.CSF", "
 heatmap_cyto <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 3),  oob = scales::squish 
@@ -1279,7 +1286,7 @@ summary_data <- summary_data %>%
   left_join(
     significance_df_non_parametric %>%
       dplyr::select(PFAS, Marker, group1, significance) %>%
-      rename(Dose = group1),
+      dplyr::rename(Dose = group1),
     by = c("PFAS", "Marker", "Dose")
   )
 vehicle_medians <- data_cyto %>%
@@ -1586,6 +1593,7 @@ if (!is.na(kw_test$p.value) && kw_test$p.value < 0.05) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+         P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -1651,6 +1659,8 @@ get_significance_non_parametric <- function(data, sex_label) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+         P.adj >= 0.05 & P.adj < 0.099 ~ ".",
+              
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -1699,7 +1709,7 @@ heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("ALP",	"AL
 heatmap_bio <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 4),  oob = scales::squish 
@@ -1779,7 +1789,7 @@ summary_data <- summary_data %>%
   left_join(
     significance_df_non_parametric %>%
       dplyr::select(PFAS, Marker, group1, significance) %>%
-      rename(Dose = group1),
+      dplyr::rename(Dose = group1),
     by = c("PFAS", "Marker", "Dose")
   )
 vehicle_medians <- data_bio %>%
@@ -1914,6 +1924,7 @@ if (!is.na(kw_test$p.value) && kw_test$p.value < 0.05) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+               P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -1978,6 +1989,7 @@ get_significance_non_parametric <- function(data, sex_label) {
               P.adj < 0.001 ~ "***",
               P.adj < 0.01 ~ "**",
               P.adj < 0.05 ~ "*",
+               P.adj >= 0.05 & P.adj < 0.099 ~ ".",
               TRUE ~ ""
             ),
             PFAS = chem,
@@ -2025,7 +2037,7 @@ heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("Liver", "
 heatmap_tissue <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2.5, color = "black") +
-  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 2),  oob = scales::squish 
@@ -2109,7 +2121,7 @@ summary_data <- summary_data %>%
   left_join(
     significance_df_non_parametric %>%
       dplyr::select(PFAS, Marker, group1, significance) %>%
-      rename(Dose = group1),
+      dplyr::rename(Dose = group1),
     by = c("PFAS", "Marker", "Dose")
   )
 vehicle_medians <- data_tissue %>%
@@ -2270,7 +2282,7 @@ data_conc[data_conc$Group %in% c("Naive", "Vehicle"), pfas_cols] <-
 data_conc_subset <- data_conc %>%
   dplyr::select(Mouse.ID, Sex, Group, all_of(pfas_cols))
 
-#write.csv(data_conc, file = "../invivo-pfas-immunotox/R input 56d/Liver_PFAS_values_fixed_56d.csv", row.names = FALSE)
+write.csv(data_conc, file = "../invivo-pfas-immunotox/R input 56d/Liver_PFAS_values_fixed_56d.csv", row.names = FALSE)
 
 other_pfas <- setdiff(pfas_cols, c("PFOS", "PFOA"))
 plasma_colors <- viridis(length(other_pfas), option = "plasma")
@@ -2303,8 +2315,8 @@ data_combined_long <- data_conc %>%
 average_pfas <- data_conc %>%
   group_by(Group) %>%
   summarise(
-    Mean_PFOS = mean(PFOS, na.rm = TRUE),
-    Mean_PFOA = mean(PFOA, na.rm = TRUE),
+    Mean_PFOS = format(mean(PFOS, na.rm = TRUE), scientific = FALSE),
+    Mean_PFOA = format(mean(PFOA, na.rm = TRUE), scientific = FALSE),
     .groups = "drop"
   )
 
@@ -2337,7 +2349,7 @@ max_n <- max(replicate_summary$n)
 cat(sprintf("n = %d–%d mice/group\n", min_n, max_n))
 ##########################################################################################################################
 data_bio <- data_bio %>%
-  rename(`Mouse.ID` = `Sample.`)
+  dplyr::rename(`Mouse.ID` = `Sample.`)
 data_combined <- data_bio %>%
   left_join(data_conc %>% dplyr::select(Mouse.ID, PFOA, PFOS), by = "Mouse.ID")
 
@@ -2647,6 +2659,7 @@ get_significance_non_parametric <- function(data, sex_label) {
             P.adj < 0.001 ~ "***",
             P.adj < 0.01 ~ "**",
             P.adj < 0.05 ~ "*",
+            P.adj >= 0.05 & P.adj < 0.099 ~ ".",
             TRUE ~ "ns"
           ),
           PFAS = chem,
@@ -2842,7 +2855,7 @@ pfas_cols <- unique(mdls_df$PFAS)
 data_conc_subset <- data_conc %>%
   dplyr::select(Mouse.ID, Sex, Group, all_of(pfas_cols))
 
-#write.csv(data_conc, file = "../invivo-pfas-immunotox/R input 56d/Liver_PFAS_values_fixed_56d.csv", row.names = FALSE)
+#write.csv(data_conc, file = "../invivo-pfas-immunotox/R input 56d/Plasma_PFAS_values_fixed_56d.csv", row.names = FALSE)
 
 other_pfas <- setdiff(pfas_cols, c("PFOS", "PFOA"))
 plasma_colors <- viridis(length(other_pfas), option = "plasma")
@@ -2876,8 +2889,8 @@ data_combined_long <- data_conc %>%
 average_pfas <- data_conc %>%
   group_by(Group) %>%
   summarise(
-    Mean_PFOS = mean(PFOS, na.rm = TRUE),
-    Mean_PFOA = mean(PFOA, na.rm = TRUE),
+    Mean_PFOS = format(mean(PFOS, na.rm = TRUE), scientific = FALSE),
+    Mean_PFOA = format(mean(PFOA, na.rm = TRUE), scientific = FALSE),
     .groups = "drop"
   )
 
@@ -2969,6 +2982,7 @@ get_significance_non_parametric <- function(data, sex_label) {
             P.adj < 0.001 ~ "***",
             P.adj < 0.01 ~ "**",
             P.adj < 0.05 ~ "*",
+            P.adj >= 0.05 & P.adj < 0.099 ~ ".",
             TRUE ~ "ns"
           ),
           PFAS = chem,
@@ -3278,7 +3292,7 @@ get_pathway_table <- function(sets_df, factor_name) {
     mutate(Factor = factor_name, Group = "Both", Category = "Shared")
 
   bind_rows(df_unique1, df_unique2, df_shared1) %>%
-    rename(Pathway = Description) %>%
+    dplyr::rename(Pathway = Description) %>%
     dplyr::select(Factor, Group, Category, Pathway, qvalue, Count)
 }
 

@@ -1,18 +1,25 @@
 library(ComplexHeatmap)
 library(pheatmap)
+library(stringr)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(viridis)
+library(ggrepel)
 
 #Load DEG files and identify significant degs (linear fold change > 1.5, padj <0.05)
-deg_files <- list.files("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/all degs")
+deg_files <- list.files("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/all degs/deg_rev", recursive = TRUE)
+output_all_files <- str_subset(deg_files, "output_ALL\\.txt$")
 
-goi_list <- read_xlsx("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/sex chromosome linked genes.xlsx")
+#goi_list <- read_xlsx("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/sex chromosome linked genes.xlsx")
 
-sig_deg <- lapply(deg_files, function(file){
-  df <- read_tsv(paste0("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/all degs/",file))
+sig_deg <- lapply(output_all_files, function(file){
+  df <- read_tsv(paste0("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/all degs/deg_rev/",file))
 
   df$contrast <- str_replace(df$contrast, "F_", "Female_")
   df$contrast <- str_replace(df$contrast, "M_", "Male_")
   df$contrast <- str_replace(df$contrast, "60day", "56-day")
- # df$contrast <- str_replace(df$contrast, "30day", "28-day")
+  df$contrast <- str_replace(df$contrast, "30day", "28-day")
   df$contrast <- str_remove(df$contrast, "_invivo_reseq")
   df$contrast <- str_remove(df$contrast, "_invivo")
   df$contrast <- str_remove(df$contrast, "_one_dose")
@@ -46,7 +53,7 @@ write.csv(sig_deg, "DEGs_compiled.csv")
 
 ##########
 sig_deg <- as.data.frame(sig_deg) %>%
-  filter(duration== "28day")
+  filter(duration== "28-day")
 
 PFOA_f <- sig_deg %>%
   filter(sex == "Female" & chemical == "PFOA" & significance == "sig") %>%
@@ -69,12 +76,14 @@ PFOS_m <- sig_deg %>%
 #Flag genes with padj = 0  
 sig_deg$shape_group <- ifelse(sig_deg$padj == 0, "zero_padj", "other")
 
-#
+#Set padj 0 to E-300
 sig_deg$padj_plot <- ifelse(sig_deg$padj == 0, 1e-300, sig_deg$padj)
 sig_deg$log10_padj <- -log10(sig_deg$padj_plot)
-sig_deg$log10_padj_capped <- ifelse(sig_deg$log10_padj > 8, 10, sig_deg$log10_padj)
 
-sig_deg$capped <- ifelse(sig_deg$log10_padj > 8, "padj>0", "padj=0")
+###### Cut-offs needs to be adjusted
+sig_deg$log10_padj_capped <- ifelse(sig_deg$log10_padj > 100, 15, sig_deg$log10_padj)
+
+sig_deg$capped <- ifelse(sig_deg$log10_padj > 100, "padj>0", "padj=0")
 
 
 fc_thresh <- 1.5
@@ -95,9 +104,8 @@ for(a in chemical) {
       #Volcano plots  
     plot_deg <- sig_deg[sig_deg$sex == b &
                           sig_deg$duration == c & 
-                          #sig_deg$chemical == b & 
-                          grepl("ppar", sig_deg$Gene_Symbol, ignore.case = TRUE)
-                        ,]
+                          sig_deg$chemical == a
+                         ,]
     
     #label_genes <- plot_deg %>%
     #  filter(abs(linearFoldChange) > fc_thresh, padj < padj_thresh)
@@ -124,7 +132,8 @@ for(a in chemical) {
         labels = c("Downregulated", "No Significance","Upregulated")
       ) +
       scale_y_continuous(
-        name = expression(-log[10](adjusted~p)),
+        name = expression(-log[10](adjusted~p))
+        #####Needs to be adjusted
         breaks = c(0, 2, 4, 6, 8, 10),
         labels = c("0", "2", "4", "6", "8","Inf")
       ) +
@@ -166,13 +175,13 @@ for(a in chemical) {
         point.padding = if(length(unique(plot_deg$dose))>2){0.5}else{1.5},
         segment.color = "azure3",
         show.legend = FALSE
-      ) 
-      + facet_wrap(vars(chemical))
+      ) +
+      facet_wrap(vars(chemical))
   #    if(length(unique(plot_deg$dose))>2){facet_wrap(vars(chemical))}
 
     volcano_plot
     
-    ggsave(volcano_plot, filename = paste0("Volcano_plot","_", unique(plot_deg$duration),"_", unique(plot_deg$chemical),"_", unique(plot_deg$sex),"_ppar only.jpg"), height = 3, width = 5)
+    ggsave(volcano_plot, filename = paste0("Volcano_plot","_", unique(plot_deg$duration),"_", unique(plot_deg$chemical),"_", unique(plot_deg$sex),".jpg"), height = 3, width = 5)
       
     }
 

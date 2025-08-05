@@ -1,9 +1,12 @@
 #CPM plots
 cpm_files <- list.files( "C:/Users/Admin/Documents/PFAS_invivo_mouse_study/DEGlists", recursive = TRUE)
+
+#Isolate CPM files
 cpm_files <- cpm_files[grepl( "_CPM",cpm_files)]
 
 cpm_files_list <- list()
 
+#Compile all files into one list
 n <- 1
 
 while(n<=length(cpm_files)){
@@ -11,6 +14,7 @@ while(n<=length(cpm_files)){
   n <- n + 1
   }
 
+#Create one dataframe per sex and duration
 d28_f <- as.data.frame(cpm_files_list[1])%>%
 mutate(group = "d28_f")
 d28_m <- as.data.frame(cpm_files_list[2])%>%
@@ -25,6 +29,7 @@ d56_f <- as.data.frame(cpm_files_list[5])%>%
 d56_m <- as.data.frame(cpm_files_list[6])%>%
   mutate(group = "d56_m")
 
+#Dataframe for each sex
 fem <- full_join(d28_f, d56_f, by = "genes", keep = FALSE)
 male <- full_join(d28_m, d56_m, by = "genes")
 
@@ -61,6 +66,7 @@ dat_list <- list(d28_f, d28_m) #, d56_f, d56_m)
 names(dat_list) <- c("d28_f", "d28_m") #, "d56_f", "d56_m")
 list_names <- names(dat_list)
 
+#Principal component analysis
 for(i in list_names){
   
   genes <- dat_list[[i]]$Gene_Symbol
@@ -234,105 +240,3 @@ CPM_PCA <- ggplot(pca_df, aes(x = PC1, y = PC2,
 CPM_PCA
 
 ggsave(filename = paste0("PFOA_PCA.jpeg"), CPM_PCA, height = 5, width = 7)
-
-
-
-#########################
-dat_list <- list(d30_f, d30_m, d60_f, d60_m)
-names(dat_list) <- c("d30_f", "d30_m", "d60_f", "d60_m")
-list_names <- names(dat_list)
-
-dat_list <- lapply(dat_list, unique)
-
-for(i in list_names){
-  
-  cpm_dat <- dat_list[[i]] %>%
-    filter(grepl("ppar", Gene_Symbol, ignore.case = TRUE))
-  
-  genes <- cpm_dat$Gene_Symbol
-  
-  cpm_dat_long <- pivot_longer(
-    cpm_dat,
-    cols = -Gene_Symbol,       # All columns except Gene_Symbol
-    names_to = "Sample",       # New column for sample names
-    values_to = "CPM"          # New column for CPM values
-  )
-  
-  cpm_dat_long <- cpm_dat_long %>%
-    separate(Sample, into = c("ID", "Sex", "Treatment", "Dose", "Date"), sep = "_", remove = TRUE) %>%
-    mutate(Dose = ifelse(Dose == "DSMO", "VC", Dose)) %>%
-    mutate(Dose = ifelse(Dose == "DMSO", "VC", Dose)) %>%
-    mutate(Dose = ifelse(Dose == "Oct2024", "VC", Dose)) %>%
-    mutate(Dose = ifelse(Treatment == "VC", "VC", Dose)) %>%
-    mutate(Treatment = ifelse(Treatment == "Vehicle", "VC", Treatment)) %>%
-    mutate(Dose = ifelse(Dose == "D1", "0.166", Dose)) %>%
-    mutate(Dose = ifelse(Dose == "D2", "0.5", Dose)) %>%
-    mutate(Dose = ifelse((i == "d30_f"|i == "d30_m") & Dose == "D3","1.5", Dose)) %>%
-    mutate(Dose = ifelse((i == "d60_f"|i == "d60_m") & Dose == "D3","1", Dose)) %>%
-    mutate(Dose = ifelse(Dose == "D4", "1.5", Dose))
-
-CPM_dot <-  ggplot(cpm_dat_long, aes(x = Gene_Symbol, y = Dose)) +
-    geom_point(aes(size = CPM, colour = Dose)) +
-    scale_size(range = c(1, 10)) +
-    scale_colour_manual(values = plasma(5)) +
-    theme(axis.title = element_text(size = 20, vjust = 1.3),
-          axis.text.y = element_text(size = 13, colour = "black"),
-          axis.text.x = element_text(size = 13, angle = 45, hjust = 1, colour = "black"),
-          panel.background = element_blank(),     # Remove plot background
-          plot.background = element_blank(),      # Remove outer background
-          panel.grid = element_blank()
-          ) +
-    labs(
-      x = "Gene", y = "Treatment",
-      color = "Dose (mg/kg/day)", size = "CPM"
-    ) +
-    if(length(unique(cpm_dat_long$Dose))>2){facet_wrap(vars(Treatment))}
-  
-  ggsave(filename = paste0(i, "_Dotplot_CPM.jpeg"), CPM_dot, height = 5, width = 7)
-  
-}
-
-
-
-df_long <- pivot_longer(
-  d28_m,
-  cols = -Gene_Symbol,       # All columns except Gene_Symbol
-  names_to = "Sample",       # New column for sample names
-  values_to = "CPM"          # New column for CPM values
-)
-
-df_long <- df_long %>% 
-  separate(Sample, into = c("ID", "Sex", "Treatment", "Dose", "Date"), sep = "_", remove = TRUE) %>%
-  select(Gene_Symbol, ID, Sex, Treatment, Dose, CPM)
-
-df_long <- df_long %>%
-  mutate(Dose = ifelse(Dose == "DSMO", "DMSO", Dose)) %>%
-  mutate(Treatment = ifelse(Treatment == "Vehicle", "VC", Treatment)) %>%
-  mutate(Dose = ifelse(Dose == "Oct2024", "DMSO", Dose)) %>%
-  mutate(Duration = "28")
-
-d28_m <- df_long
-
-
-d28_f_long <- d28_f
-d28_m_long <- d28_m
-d30_f_long <- d30_f
-d30_m_long <- d30_m
-d60_f_long <- d60_f
-d60_m_long <- d60_m
-
-all_dat <- rbind(d28_f, d28_m, d30_f, d30_m, d60_f, d60_m) %>%
-  filter(CPM > 5)
-
-all_dat <- rbind(d30_f, d28_f)
-
-ggplot(all_dat, aes(x = Gene_Symbol, y = CPM, colour = Duration, label = Dose)) +
-  geom_jitter(width = 0.2, alpha = 0.7) +
-  facet_grid(cols=vars(Treatment)) +  # Rows = Sex, Columns = Treatment
-  theme_bw() +
-  xlab("Gene") +
-  ylab("CPM") + 
-  geom_text_repel(size = 3,
-                  max.overlaps = getOption("ggrepel.max.overlaps", default = 10),
-                  show.legend = FALSE) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))

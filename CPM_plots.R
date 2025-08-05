@@ -1,4 +1,4 @@
-
+#CPM plots
 cpm_files <- list.files( "C:/Users/Admin/Documents/PFAS_invivo_mouse_study/DEGlists", recursive = TRUE)
 cpm_files <- cpm_files[grepl( "_CPM",cpm_files)]
 

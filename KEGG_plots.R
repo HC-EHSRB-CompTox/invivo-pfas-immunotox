@@ -104,9 +104,6 @@ for(a in chemical) {
                                          #d,
                                          ".jpg"), height = 10, width = 8)
       
-      # Dotplot
-      #dotplot(kegg_enrich, showCategory=10)
-      
       # Enrichment map
       emap_plot <- emapplot(pairwise_termsim(kegg_enrich))
       ggsave(emap_plot, filename = paste0("Enrichment map_",
@@ -115,47 +112,6 @@ for(a in chemical) {
                                           c,"_",
                                           #d,
                                           ".jpg"), height = 8, width = 8)
-      
-      # cnetplot (gene-concept network)
-      #cnetplot(kegg_enrich, categorySize="pvalue", foldChange=NULL)
-      
-      # List pathways
-      #pathways <- keggList("pathway", "mmu")
-   
-      
-      # Get pathway details
-      #pathway_detail <- keggGet("mmu04110") 
-      
-      # Explore genes in a pathway
-      #pathway_genes <- pathway_detail[[1]]$GENE
+  
       }
     }
-#  }
-#}
-
-####Venn Diagram
-
-folder_path <- "C:/Users/Admin/Documents/PFAS_invivo_mouse_study/KEGG_results/"
-file_list <- list.files(folder_path)
-KEGG_files <- file_list[str_detect(file_list, "KEGG_results")]
-
-KEGG_files_all <- lapply(KEGG_files, function(file){
-    dat <- read.csv(paste0(folder_path,file))
-    dat
-  }) %>%
-    do.call(rbind,.)
-
-KEGG_groups <- KEGG_files_all %>%
-  group_split(group)
-
-d28_f <- KEGG_groups[[1]]
-
-d28_m <- KEGG_groups[[2]]
-
-d56_f <- KEGG_groups[[3]]
-
-d56_m <- KEGG_groups[[4]]
-
-
-
-      

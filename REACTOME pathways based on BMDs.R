@@ -8,6 +8,7 @@ require(caret)
 library(data.table)
 library(ggrepel)
 
+#Load REACTOME output from BMDExpress
 sig_path <- read_tsv("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/BMDExpress output/Combined Analyses_filtered_REACTOME_July2025", skip = 4)
 sig_path <- read.csv("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/BMDExpress output/GO_biological_processes_all.csv", row.names = NULL)
 
@@ -41,6 +42,7 @@ dat <- dat %>%
 
 write.csv(dat, "GO_data_56-day.csv")
 
+#Apply filters to REACTOME hits
 dat_f <- dat %>%
   filter(dat$`Fisher's Exact Two Tail` <= 0.1 & dat$`Genes That Passed All Filters` > 5 & dat$`Input Genes` >= 3 & dat$Percentage >= 5)
 
@@ -59,6 +61,7 @@ lowest_BMD <- dat_f %>%
   
   colnames(lowest_BMD)[5:8] <- c("Gene/Pathway", "BMD", "BMDL", "BMDU")
 
+#Pathways with the lowest BMDs
 lowest_bmd_plot <- ggplot(lowest_BMD, aes(x = BMD, y = duration, colour = chemical, label = `Gene/Pathway`)) +
   geom_point(size = 3) +
   geom_errorbar(aes(xmin = BMDL, xmax = BMDU), width = 0.05) +

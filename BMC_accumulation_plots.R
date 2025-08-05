@@ -9,13 +9,8 @@ library(data.table)
 library(viridis)
 library(ggrepel)
 
-# 28-day pilot excluded from study
-#bmd_28d <- read.csv("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/BMDExpress output/Combined Analyses_filtered_56day.csv", skip = 8)
-#bmd_28d$Analysis <- str_remove(bmd_28d$Analysis, "_reseq")
-
 bmd_56d <- read.csv("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/BMDExpress output/Combined Analyses_filtered_56day.csv", skip = 8)
 
-#df <- rbind(bmd_28d, bmd_60d)
 df <- bmd_56d
 
 analysis <- data.frame(analysis = df$Analysis)
@@ -55,6 +50,7 @@ df$Direction <- str_replace(df$Direction, "1", "up")
 #df used in KEGG 
 ####################
 
+#Top 400 BMD
 df_400_BMD <- df %>%
   filter(bmd_no<=400)
 
@@ -69,6 +65,7 @@ df_25 <- df %>%
 df_25 <- df_25 %>%
   select(c(1:4), Gene, BMD, BMDL, BMDU)
 
+#All BMD
 plot <- ggplot(df, aes(x = BMD, y = bmd_no, colour = chemical)) +
   geom_point(size = 3, alpha= 0.7) +
   scale_x_log10() +
@@ -87,8 +84,10 @@ plot <- ggplot(df, aes(x = BMD, y = bmd_no, colour = chemical)) +
 
 plot
 
+#Save all BMD plot
 ggsave(paste0(Sys.Date(), "_Gene accumulation_all.jpeg"), plot, height = 10, width = 10)
 
+#Top 25 BMDs
 plot_25 <- ggplot(df_25_BMD, aes(x = BMD, y = bmd_no, colour = chemical, fill = chemical, shape = Direction, label = Gene)) +
   geom_point(size = 3, alpha = 0.7) +
   scale_shape_manual(values = c("up" = 24, "down" = 25)) +
@@ -117,6 +116,7 @@ plot_25
 
 ggsave(paste0(Sys.Date(), "_Gene accumulation_lowest25.jpeg"), plot_25, height = 12, width = 10)
 
+#25th BMD
 plot_25 <- ggplot(df_25, aes(x = BMD, y = chemical, colour = chemical, label = `Gene/Pathway`)) +
   geom_point(size = 3) +
   geom_errorbar(aes(xmin = BMDL, xmax = BMDU), width = 0.05) +
@@ -162,209 +162,8 @@ All_BMD
 
 ggsave("Lowest pathway and 25th gene BMDs.jpeg", All_BMD, height = 10, width = 15)
 
-####Immune Genes
-b_cell_homeo <- read_tsv("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/Immune genes list/MOUSE_b_cell_homeostasis.txt", col_names = FALSE)
-
-b_cell_homeo <- as.data.frame(b_cell_homeo[c(2,5)])
-
-colnames(b_cell_homeo) <- c("Gene", "Function")
-
-b_cell_homeo$Gene <- tolower(b_cell_homeo$Gene)
-
-immun_list <- b_cell_homeo
-
-###########
-
-humoral_resp <- read_tsv("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/Immune genes list/MOUSE_humoral_response.txt", col_names = FALSE)
-
-humoral_resp <- as.data.frame(humoral_resp[c(2,5)])
-
-colnames(humoral_resp) <- c("Gene", "Function")
-
-immun_list <- humoral_resp
-
-immun_list$Gene <- tolower(humoral_resp$Gene)
-
-############
-
-immun_list$Function <- str_extract(immun_list$Function, "^[^\\(]+")
-                    
-immune_BMD <- df[df$'Gene/Pathway' %in% intersect(immun_list$Gene, df$'Gene/Pathway'), ]
-
-immune_BMD <- immune_BMD %>%
-  select(c(1:4), 'Gene/Pathway',"BMD", "BMDL", "BMDU", "Direction", bmd_no)
-
-colnames(immune_BMD)[c(5:9)] <- c("Gene", "BMD", "BMDL", "BMDU", "Direction")
-
-immune_BMD <- left_join(immune_BMD, immun_list)
-
-immune_BMD$Best.adverseDirection <- as.character(immune_BMD$Direction)
-
-immune_BMD$Direction <- str_replace(immune_BMD$Direction, "-1", "down")
-immune_BMD$Direction <- str_replace(immune_BMD$Direction, "1", "up")
-
-immune_BMD <- immune_BMD %>%
-  filter(chemical == "PFOS")
-
-immune_BMD_plot <- ggplot(immune_BMD, aes(x = BMD, y = bmd_no, colour = Direction,label = Gene)) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(xmin = BMDL, xmax = BMDU), width = 5) +
-  scale_x_log10() +
-  scale_color_manual(values = viridis(3)) +
-  ylab("BMD ranking") +
-  xlab("BMD (mg/kg/day)") +
-  geom_text_repel(size = 5,
-                  max.overlaps = 15,
-                  show.legend = FALSE) +
-  theme_bw() +
-  theme(strip.text = element_text(size = 20),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 15),
-        axis.title = element_text(size= 20),
-        axis.text = element_text(size = 15)) +
-  facet_grid(rows = vars(sex), cols = vars(duration))
-
-immune_BMD_plot
-
-ggsave("Humoral response genes BMD_PFOS_direction.jpeg", immune_BMD_plot, height = 10, width = 10)
-
-immune_BMD_plot_func <- ggplot(immune_BMD, aes(x = BMD, y = bmd_no, colour = Direction,label = Function)) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(xmin = BMDL, xmax = BMDU), width = 5) +
-  scale_x_log10() +
-  scale_color_manual(values = viridis(3)) +
-  ylab("BMD ranking") +
-  xlab("BMD (mg/kg/day)") +
-  geom_text_repel(size = 3,
-                  max.overlaps = 15,
-                  show.legend = FALSE) +
-  theme_bw() +
-  theme(strip.text = element_text(size = 20),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 15),
-        axis.title = element_text(size= 20),
-        axis.text = element_text(size = 15)) +
-  facet_grid(rows = vars(sex), cols = vars(duration))
-
-immune_BMD_plot_func
-
-ggsave("Humoral response genes BMD_PFOS_function.jpeg", immune_BMD_plot_func, height = 10, width = 10)
-
-###########################
-
-
-immune_genes <- read_tsv("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/Immune genes list/important_immune_tox_genes.txt")
-
-immune_genes$Gene <- tolower(immune_genes$Gene)
-
-colnames(immune_genes)[2] <- "Immune_group"
-
-immune_BMD <- df[df$`Gene/Pathway` %in% intersect(immune_genes$Gene, df$`Gene/Pathway`), ]
-
-immune_BMD <- immune_BMD %>%
-  select(c(1:4), 'Gene/Pathway', BMD, BMDL, BMDU, bmd_no, Direction)
-
-colnames(immune_BMD)[c(5:8, 10)] <- c("Gene", "BMD", "BMDL", "BMDU", "Direction")
-
-immune_BMD$Direction <- str_replace(immune_BMD$Direction, "-1", "down")
-immune_BMD$Direction <- str_replace(immune_BMD$Direction, "1", "up")
-
-immune_BMD <- left_join(immune_BMD, immune_genes)
-
-immune_BMD_plot <- ggplot(immune_BMD, aes(x = BMD, y = bmd_no, colour = chemical,label = Gene)) +
-    geom_point(size = 2) +
-    geom_errorbar(aes(xmin = BMDL, xmax = BMDU), width = 5) +
-    scale_x_log10() +
-    scale_color_manual(values = turbo(4)) +
-    ylab("BMD ranking") +
-    xlab("BMD (mg/kg/day)") +
-    geom_text_repel(size = 5, show.legend = FALSE) +
-    theme_bw() +
-    theme(strip.text = element_text(size = 20),
-          legend.text = element_text(size = 15),
-          legend.title = element_text(size = 15),
-          axis.title = element_text(size= 20),
-          axis.text = element_text(size = 15)) +
-    facet_grid(rows = vars(sex), cols = vars(duration))
-
-immune_BMD_plot
-
-ggsave("Immune genes BMD.jpeg", immune_BMD_plot, height = 10, width = 15)
-
-immune_BMD_plot <- ggplot(immune_BMD[immune_BMD$chemical == "PFOS",], aes(x = BMD, y = bmd_no, colour = Immune_group, fill = Immune_group, shape = Direction, label = Gene)) +
-  geom_point(size = 3) +
-  scale_shape_manual(values = c("up" = 24, "down" = 25)) +
-  #scale_fill_manual(values = c("Cytokines"="#D55E00", "Chemokine Receptors"="#0072B2", "Chemokines"="#CC79A7", "Cytokine Receptors"="#009E73")) +
-  #scale_color_manual(values = c("Cytokines"="#D55E00", "Chemokine Receptors"="#0072B2", "Chemokines"="#CC79A7", "Cytokine Receptors"="#009E73")) +  
-  geom_errorbar(aes(xmin = BMDL, xmax = BMDU), width = 5) +
-  geom_text_repel(size = 5,
-                  max.overlaps = getOption("ggrepel.max.overlaps", default = 10),
-                  show.legend = FALSE) +
-  scale_x_log10() +
-  scale_color_manual(values = viridis(5)) +
-  scale_fill_manual(values = viridis(5)) +
-  ylab("BMD ranking") +
-  xlab("BMD (mg/kg/day)") +
-  theme_bw() +
-  theme(strip.text = element_text(size = 20),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 15),
-        axis.title = element_text(size= 20),
-        axis.text = element_text(size = 15)) +
-  facet_grid(rows = vars(sex), cols = vars(duration))
-
-immune_BMD_plot
-
-ggsave("Immune genes BMD_PFOS_direction.jpeg", immune_BMD_plot, height = 10, width = 15)
-
-#####################################################################
-
-select_gene <- immune_genes$Gene
-
-df$colour_group <- ifelse(df$`Gene/Pathway` %in% select_gene, "Immune gene", df$chemical)
-
-plot_all <- ggplot(df, aes(x = BMD, y = bmd_no, colour = chemical)) +
-  geom_point() +  
-  scale_x_log10() +
-  ylab("Gene Accumulation") +
-  xlab("BMD (mg/kg/day)") +
-  theme_bw() +
-  theme(strip.text = element_text(size = 20),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 15),
-        axis.title = element_text(size= 20),
-        axis.text = element_text(size = 15)) +
-  facet_grid(rows = vars(sex), cols = vars(duration))
-
-plot_all
-
-ggsave("All BMDs.jpeg", plot_all, height = 10, width = 15)
-
-###highlight immune genes
-
-plot_all <- ggplot(df, aes(x = BMD, y = bmd_no)) +
-  geom_point(data = subset(df, colour_group != "Immune gene"),
-             aes(colour = chemical), size = 2) +
-  geom_point(data = subset(df, colour_group == "Immune gene"),
-             color = "orange", size = 2) +
-  scale_x_log10() +
-  scale_colour_manual(values=viridis(3)) +
-  ylab("Gene Accumulation") +
-  xlab("BMD (mg/kg/day)") +
-  theme_bw() +
-  theme(strip.text = element_text(size = 20),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 15),
-        axis.title = element_text(size= 20),
-        axis.text = element_text(size = 15)) +
-  facet_grid(rows = vars(sex), cols = vars(duration))
-
-plot_all
-
-ggsave("All BMDs_immune genes highlighted.jpeg", plot_all, height = 10, width = 15)
-
 ###########################################
-
+#Top 50 and 25 BMDs by Sex
 ggplot(df_50[df_50$sex == "F",], aes(x = Best.BMD, y = bmd_no, colour = chemical)) +
   geom_point() +
   scale_x_log10() +
@@ -418,7 +217,7 @@ plot
 ggsave("Lowest 25 BMDs.jpeg", plot, height = 15, width = 20)
 
 ##################################################
-
+#BMDs of specified genes of interest
 df <- df %>% ungroup()
 
 df$duration <- as.numeric(gsub("[^0-9]", "", df$duration))

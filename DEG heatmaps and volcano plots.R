@@ -1,6 +1,7 @@
 library(ComplexHeatmap)
 library(pheatmap)
 
+#Load DEG files and identify significant degs (linear fold change > 1.5, padj <0.05)
 deg_files <- list.files("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/all degs")
 
 goi_list <- read_xlsx("C:/Users/Admin/Documents/PFAS_invivo_mouse_study/sex chromosome linked genes.xlsx")
@@ -65,8 +66,6 @@ PFOS_m <- sig_deg %>%
 
 
 ##########
-
-
 #Flag genes with padj = 0  
 sig_deg$shape_group <- ifelse(sig_deg$padj == 0, "zero_padj", "other")
 
@@ -88,7 +87,7 @@ chemical <- c("PFOS", "PFOA")
 duration <- c("28-day", "56-day")
 dose <- unique(sig_deg$dose)
 
-#Volcano plot and heatmap for each chemical and sex
+#################Volcano plot and heatmap for each chemical and sex
 for(a in chemical) {
   for(b in sex){
     for(c in duration){
@@ -175,7 +174,7 @@ for(a in chemical) {
     
     ggsave(volcano_plot, filename = paste0("Volcano_plot","_", unique(plot_deg$duration),"_", unique(plot_deg$chemical),"_", unique(plot_deg$sex),"_ppar only.jpg"), height = 3, width = 5)
       
-    }}
+    }
 
   ###########################################################
   #DEG heatmaps
@@ -246,9 +245,6 @@ for(a in chemical) {
     } }
   }
 
-#plot_deg <- sig_deg[!is.na(sig_deg$padj),] 
-
-
 #####################################################
 plot_deg <- sig_deg[!is.na(sig_deg$padj) & sig_deg$sex == "F" & sig_deg$padj <= 0.05 & sig_deg$duration != "28day" & sig_deg$chemical == "PFOA",]
 
@@ -288,71 +284,3 @@ pheatmap(wide_df,
          height = 10,
          res = 300)# Set TRUE if you want to label genes
 
-
-
-#########sex chromosome linked DEGs
-
-goi_deg <- sig_deg[sig_deg$Gene_Symbol %in% intersect(goi_list$Gene_Symbol, sig_deg$Gene_Symbol), ]
-
-goi_deg <- inner_join(goi_deg, goi_list, keep = FALSE, unmatched = "drop")
-
-plot_deg <- goi_deg[!is.na(goi_deg$padj)
-#                    & goi_deg$sex == "F"
-                    & goi_deg$duration == "28day"
-                    #& goi_deg$chemical == "PFOS"
-                    ,]
-
-label_genes <- plot_deg %>%
-  filter(abs(log2FoldChange) > fc_thresh, padj < padj_thresh)
-
-volcano_plot <-ggplot(plot_deg, aes(x = log2FoldChange, y = -log10(padj), col = direction)) +
-  coord_cartesian(ylim = c(0, 10), xlim = c(-12, 12)) +
-  geom_point( size = 2, stroke = 0) +      
-  theme_classic() +
-  scale_color_manual(
-    values = c("up" = "#e85362", "down" = "#3f0f72", "no" = "grey"),
-    labels = c("Downregulated", "Not Significant","Upregulated")
-  ) +
-  labs(title = paste(plot_deg$duration, plot_deg$chemical, plot_deg$sex),
-       x = "Log2 Fold Change",
-       y = "-Log10(padj)",
-       color = "Significance"
-  ) +
-  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "black") +  # Horizontal line for p-value cutoff
-  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +        # Vertical lines for log2FC cutoff
-  
-  # Add gene labels to selected points
-  geom_text_repel(
-    data = label_genes,
-    aes(label = Gene_Symbol),  # Assumes your gene names are in a column called "gene"
-    size = 3,
-    max.overlaps = 20,   # Increase or decrease to control how many labels show
-    box.padding = 0.3,
-    point.padding = 0.2,
-    segment.color = "grey50",
-    show.legend = FALSE
-  )
-
-volcano_plot
-
-
-
-
-
-sig_deg_zero_pv <- sig_deg[sig_deg$padj == 0,]
-
-default_palette <- colorRampPalette(viridis::plasma(20))(200)
-heatmap_data <- sig_deg1[, c("C_1", "C_2", "C_3", "M_1", "M_3","M_2")]
-column_order <- c("C_1", "C_2", "C_3", "M_1", "M_3","M_2")  
-heatmap_data <- heatmap_data[, column_order]
-colnames(heatmap_data) <- c("Control female", "Control female", "Control male", "MeHg female", "MeHg female","MeHg male")
-# Generate the heatmap with ordered columns
-heatmap_plot <- pheatmap(sig_deg1,
-                         scale = "row",
-                         clustering_distance_rows = "euclidean",
-                         clustering_method = "complete",
-                         show_rownames = FALSE,
-                         show_colnames = TRUE,
-                         fontsize_row = 10,
-                         cluster_cols = FALSE,  # Turn off clustering for columns
-                         color = default_palette)

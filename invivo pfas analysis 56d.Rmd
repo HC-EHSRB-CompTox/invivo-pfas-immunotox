@@ -26,7 +26,7 @@ library(eulerr)
 ##Spleen stats and plot
 ```{r}
 data_spleen <- read.csv("../invivo-pfas-immunotox/R input 56d/Flow Results Spleen.csv")
-data_spleen <- data_spleen[ , !(names(data_spleen) %in% c("B220..F4.80.","B220.macs","CD4.CD25.CD69.ve","CD4.CD69","CD4.DP","CD4.DCs","CD8.CD69","CD8dcs"))]
+data_spleen <- data_spleen[ , !(names(data_spleen) %in% c("B220..F4.80.","B220.macs","CD4.CD25.CD69.ve","CD4.CD69","CD4.DP","CD4.DCs","CD8.CD69","CD8dcs", "NK"))]
 
 data_spleen <- data_spleen %>%
   mutate(group = if_else(group %in% c("Naive", "Vehicle"),
@@ -116,6 +116,7 @@ data_spleen <- data_spleen %>%
   group_by(Sex, PFAS, Marker) %>%
   mutate(vehicle_median = median(Value[Dose == "Vehicle"], na.rm = TRUE),
          normalized = Value / vehicle_median,
+         log2fc = log2(normalized),
          percent_of_vehicle = (Value / vehicle_median) * 100) %>%
   ungroup()
 data_female <- data_spleen %>% filter(Sex == "Female")
@@ -186,7 +187,7 @@ heatmap_data <- data_spleen %>%
 heatmap_with_sig <- heatmap_data %>%
   left_join(sig_for_heatmap, by = c("Sex", "PFAS", "Marker", "Dose"))
 
-heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("T.cells","CD4.T.cells","CD8", "B.Cells","DCs","NK"))
+heatmap_with_sig$Marker <- factor(heatmap_with_sig$Marker, levels = c("T.cells","CD4.T.cells","CD8", "B.Cells","DCs"))
 heatmap_with_sig$Dose <- factor(heatmap_with_sig$Dose, levels = c( "1.5", "1", "0.5", "0.166","Vehicle", "Naive"))
 colnames(data_spleen)
                                   
@@ -242,7 +243,7 @@ custom_colors <- c("#0d0887", "#7e03a8", "#b52f8c", "#de5f65","#ed7953", "#f8954
 
 pfas_order <- c("PFOS", "PFOA")
 dose_levels <- c("Naive", "Vehicle", "0.166", "0.5", "1", "1.5")
-marker_levels <- c("T.cells","CD4.T.cells","CD8", "B.Cells","DCs","NK")
+marker_levels <- c("T.cells","CD4.T.cells","CD8", "B.Cells","DCs")
 
 data_spleen$PFAS <- factor(data_spleen$PFAS, levels = pfas_order)
 data_spleen$Dose <- factor(data_spleen$Dose, levels = dose_levels)
@@ -331,6 +332,7 @@ plot <- ggplot(data_spleen, aes(x = interaction(Dose, Sex), y = Value)) +
     title = "Normalized Response by Dose and Sex",
     x = "Dose and Sex",
     y = "Value"
+    
   ) +
   theme_minimal() +
   theme(

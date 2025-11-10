@@ -534,7 +534,7 @@ heatmap_with_sig$Dose <- factor(heatmap_with_sig$Dose, levels = c( "1.5", "1", "
 heatmap_blood <- ggplot(heatmap_with_sig, aes(x = Marker, y = Dose, fill = median_norm)) +
   geom_tile(color = "black", size = 0.4) +
   geom_text(aes(label = round(median_norm, 2)), size = 2, color = "black") +
-  geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
+  #geom_text(aes(label = significance), vjust = 0.4, size = 6, color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#330597", mid = "white", high = "red", midpoint = 1,
     name = "Normalized\nMedian", limits = c(0, 1.5),  oob = scales::squish 
@@ -568,7 +568,7 @@ plot_height <- n_doses * tile_height_in
 
 
 ggsave(
-  filename = "../invivo-pfas-immunotox/R input 56d/plots/blood_heatmap.png",
+  filename = "../invivo-pfas-immunotox/R input 56d/plots/blood_heatmap_NOSIG.png",
   plot = heatmap_blood,
   width = plot_width,
   height = plot_height,
@@ -701,7 +701,8 @@ cat(sprintf("n = %d–%d mice/group\n", min_n, max_n))
 ##Thymus stats and plot
 ```{r}
 data_thymus <- read.csv("../invivo-pfas-immunotox/R input 56d/Thymus_flow.csv")
-data_thymus <- data_thymus[ , !(names(data_thymus) %in% c("Macrophages", "B.Cells", "Dendritic.Cells", "CD3.CD69.", "CD3.CD69..3", "DP.CD69"))]
+data_thymus <- data_thymus[ , !(names(data_thymus) %in% c("CD3.CD69.", "CD3.CD69..3", "DP.CD69", "DN.CD3"))]
+
 
 data_thymus <- data_thymus %>%
   mutate(group = if_else(group %in% c("Naive", "Vehicle"),
@@ -859,10 +860,13 @@ sig_for_heatmap <- significance_df_non_parametric %>%
     Dose = ifelse(group1 %in% c("Naive", "Vehicle"), group1, Dose),
     Marker = as.character(Marker) 
   ) %>%
+  filter(!Marker %in% c("Macrophages", "B.Cells", "Dendritic.Cells", "DN.DP")) %>%
   dplyr::select(Sex, PFAS, Marker, Dose, significance)
 heatmap_data <- data_thymus %>%
+  filter(!Marker %in% c("Macrophages", "B.Cells", "Dendritic.Cells", "DN.DP")) %>%
   group_by(Sex, PFAS, Dose, Marker) %>%
   summarise(median_norm = median(normalized, na.rm = TRUE), .groups = "drop")
+  
 heatmap_with_sig <- heatmap_data %>%
   left_join(sig_for_heatmap, by = c("Sex", "PFAS", "Marker", "Dose"))
 

@@ -21,6 +21,8 @@ library(FSA)
 library(ggpubr) 
 library(drc)
 library(eulerr)
+library(drc)      
+library(scales)  
 ```
 #Immune
 ##Spleen stats and plot
@@ -2380,225 +2382,118 @@ data_combined <- data_combined %>%
 
 ############################################################################################
 #drc
-data_combined <- data_combined %>%
-  filter(Marker %in% c("ALP", "ALT", "TGL", "CA"))
-
-data_clean <- data_combined %>%
-  mutate(
-    Value = as.numeric(as.character(Value)),
-    # Vehicle → 0; else numeric
-    Dose_num = ifelse(Dose == "Vehicle",
-                      0,
-                      as.numeric(as.character(Dose)))
-  ) %>%
-  mutate(
-    Cumulative_Dose     = Dose_num * 56,
-    Cumulative_Dose_adj = Cumulative_Dose + 1
-  ) %>%
-  filter(!is.na(Dose_num) & is.finite(Dose_num))
-
-avg_measured <- data_clean %>%
-  filter(PFAS == "PFOS") %>%
-  group_by(Dose_num) %>%
-  summarize(
-   
-    Mean_Measured = mean(PFOS, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  mutate(Measured_adj = Mean_Measured + 1)  
-
-nested <- data_clean %>%
-  filter(PFAS == "PFOS") %>%
-  left_join(avg_measured, by = "Dose_num") %>%
-  mutate(Measured_adj = Mean_Measured + 1) %>%
- 
-  filter(
-    !is.na(Cumulative_Dose_adj),
-    !is.na(Measured_adj),
-    !is.na(Value),
-    is.finite(Cumulative_Dose_adj),
-    is.finite(Measured_adj),
-    is.finite(Value)
-  ) %>%
-  group_by(Marker) %>%
-  nest()
-
-safe_model_predict <- function(df, dose_col) {
-  doses <- df[[dose_col]]
-  resp  <- df$Value
-
-  if (length(unique(doses)) < 3 || var(resp, na.rm=TRUE) == 0) return(NULL)
+create_drc_plot <- function(df, chemical, file_name, color_names) {
+  data_clean <- df %>%
+    filter(PFAS == chemical, Marker %in% c("ALP", "ALT", "TGL", "CA")) %>%
+    mutate(
+      Value = as.numeric(as.character(Value)),
+      Dose_num = ifelse(Dose == "Vehicle",
+                        0,
+                        as.numeric(as.character(Dose))),
+      Cumulative_Dose     = Dose_num * 56,
+      Cumulative_Dose_adj = Cumulative_Dose + 1
+    ) %>%
+    filter(!is.na(Dose_num) & is.finite(Dose_num))
   
-  mod <- tryCatch(
-    drm(resp ~ doses, fct = LL.4(), data = data.frame(doses, resp)),
-    error = function(e) NULL
-  )
-  if (is.null(mod)) return(NULL)
+  avg_measured <- data_clean %>%
+    group_by(Dose_num) %>%
+    summarize(
+      Mean_Measured = mean(.data[[chemical]], na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(Measured_adj = Mean_Measured + 1)
   
-  newdose <- seq(min(doses), max(doses), length.out = 100)
-  pred_df <- data.frame(Dose = newdose)
-  pred_df$fit <- tryCatch(
-    predict(mod, newdata = data.frame(doses = newdose)),
-    error = function(e) rep(NA, length(newdose))
-  )
-  return(pred_df)
+  nested <- data_clean %>%
+    left_join(avg_measured, by = "Dose_num") %>%
+    filter(
+      !is.na(Cumulative_Dose_adj),
+      !is.na(Measured_adj),
+      !is.na(Value),
+      is.finite(Cumulative_Dose_adj),
+      is.finite(Measured_adj),
+      is.finite(Value)
+    ) %>%
+    group_by(Marker) %>%
+    nest()
+  
+  safe_model_predict <- function(df, dose_col) {
+    doses <- df[[dose_col]]
+    resp  <- df$Value
+    if (length(unique(doses)) < 3 || var(resp, na.rm=TRUE) == 0) return(NULL)
+    mod <- tryCatch(
+      drm(resp ~ doses, fct = LL.4(), data = data.frame(doses, resp)),
+      error = function(e) NULL
+    )
+    if (is.null(mod)) return(NULL)
+    newdose <- seq(min(doses), max(doses), length.out = 100)
+    pred_df <- data.frame(Dose = newdose)
+    pred_df$fit <- tryCatch(
+      predict(mod, newdata = data.frame(doses = newdose)),
+      error = function(e) rep(NA, length(newdose))
+    )
+    return(pred_df)
+  }
+  
+  models_nominal <- nested %>%
+    mutate(pred = map(data, ~safe_model_predict(.x, "Cumulative_Dose_adj"))) %>%
+    filter(!map_lgl(pred, is.null)) %>%    
+    unnest(pred) %>%
+    mutate(Source = "Nominal Dose")
+  
+  models_measured <- nested %>%
+    mutate(pred = map(data, ~safe_model_predict(.x, "Measured_adj"))) %>%
+    filter(!map_lgl(pred, is.null)) %>%    
+    unnest(pred) %>%
+    mutate(Source = paste("Measured", chemical))
+  
+  models_combined <- bind_rows(models_nominal, models_measured)
+  
+  raw_nominal  <- nested %>% unnest(data) %>% mutate(x = Cumulative_Dose_adj, Source = "Nominal Dose")
+  raw_measured <- nested %>% unnest(data) %>% mutate(x = Measured_adj, Source = paste("Measured", chemical))
+  raw_combined <- bind_rows(raw_nominal, raw_measured)
+  
+  write.csv(raw_combined, file_name)
+  
+  ggplot() +
+    geom_point(data = raw_combined,
+               aes(x = x, y = Value, color = Source, shape = Sex),
+               alpha = 0.6, size = 1.8) +
+    geom_line(data = models_combined,
+              aes(x = Dose, y = fit, color = Source, linetype = Source),
+              size = 1) +
+    facet_wrap(~ Marker, scales = "free_y", nrow = 1) +
+    scale_x_log10() +
+    scale_color_manual(name = "Plasma", values = color_names) +
+    labs(
+      title = paste(chemical, ": Nominal vs Measured Dose–Response (LL.4)"),
+      x = "Dose (log10 scale, +1)",
+      y = "Response (Value)",
+      color = "Source",
+      shape = "Source",
+      linetype = "Source"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(strip.text = element_text(face = "bold"))
 }
 
-models_nominal <- nested %>%
-  mutate(pred = map(data, ~safe_model_predict(.x, "Cumulative_Dose_adj"))) %>%
- filter(!map_lgl(pred, is.null)) %>%    
-  unnest(pred) %>%
-  mutate(Source = "Nominal Dose")
+# Example usage for PFOS
+pfos_plot <- create_drc_plot(
+  data_combined, "PFOS",
+  "../invivo-pfas-immunotox/R input 56d/tcplfit_input_PFOS.csv",
+  c("Measured PFOS" = "#8405a7", "Nominal Dose" = "#f68f44")
+)
+ggsave("../invivo-pfas-immunotox/R input 56d/plots/pfos_drc.png", pfos_plot, width = 9, height = 3, dpi = 300, bg = "white")
 
-models_measured <- nested %>%
-  mutate(pred = map(data, ~safe_model_predict(.x, "Measured_adj"))) %>%
- filter(!map_lgl(pred, is.null)) %>%    
-  unnest(pred) %>%
-  mutate(Source = "Measured PFOS")
+# Example usage for PFOA
+pfoa_plot <- create_drc_plot(
+  data_combined, "PFOA",
+  "../invivo-pfas-immunotox/R input 56d/tcplfit_input_PFOA.csv",
+  c("Measured PFOA" = "#8405a7", "Nominal Dose" = "#f68f44")
+)
+ggsave("../invivo-pfas-immunotox/R input 56d/plots/pfoa_drc.png", pfoa_plot, width = 9, height = 3, dpi = 300, bg = "white")
 
-models_combined <- bind_rows(models_nominal, models_measured)
-
-raw_nominal  <- nested %>%
-  unnest(data) %>%
-  mutate(x = Cumulative_Dose_adj, Source = "Nominal Dose")
-
-raw_measured <- nested %>%
-  unnest(data) %>%
-  mutate(x = Measured_adj, Source = "Measured PFOS")
-
-raw_combined <- bind_rows(raw_nominal, raw_measured)
-
-pfos_plot <- ggplot() +
-  geom_point(data = raw_combined,
-             aes(x = x, y = Value, color = Source, shape = Sex),
-             alpha = 0.6, size = 1.8) +
-  geom_line(data = models_combined,
-            aes(x = Dose,       # <— here
-                y = fit,
-                color = Source,
-                linetype = Source),
-            size = 1) +
-  facet_wrap(~ Marker, scales = "free_y", nrow = 1) +
-  scale_x_log10() +
-scale_color_manual(
-    name = "Plasma",
-    values = c("Measured PFOS" = "#8405a7", "Nominal Dose" = "#f68f44")) +
-  labs(
-    title = "PFOS: Nominal vs Measured Dose–Response (LL.4)",
-    x = "Dose (log10 scale, +1)",
-    y = "Response (Value)",
-    color = "Source",
-    shape = "Source",
-    linetype = "Source"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(strip.text = element_text(face = "bold"))
-
-
-print(pfos_plot)
-
-ggsave(filename = "../invivo-pfas-immunotox/R input 56d/plots/pfos_drc.png", plot = pfos_plot, width = 9, height = 3, dpi = 300,bg = "white")
-
-avg_measured <- data_clean %>%
-  filter(PFAS == "PFOA") %>%
-  group_by(Dose_num) %>%
-  summarize(
-    Mean_Measured = mean(PFOA, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  mutate(Measured_adj = Mean_Measured + 1)
-
-nested <- data_clean %>%
-  filter(PFAS == "PFOA") %>%
-  left_join(avg_measured, by = "Dose_num") %>%
-  mutate(Measured_adj = Mean_Measured + 1) %>%
-  filter(
-    !is.na(Cumulative_Dose_adj),
-    !is.na(Measured_adj),
-    !is.na(Value),
-    is.finite(Cumulative_Dose_adj),
-    is.finite(Measured_adj),
-    is.finite(Value)
-  ) %>%
-  group_by(Marker) %>%
-  nest()
-
-safe_model_predict <- function(df, dose_col) {
-  doses <- df[[dose_col]]
-  resp  <- df$Value
- 
-  if (length(unique(doses)) < 3 || var(resp, na.rm=TRUE) == 0) return(NULL)
-  
-  mod <- tryCatch(
-    drm(resp ~ doses, fct = LL.4(), data = data.frame(doses, resp)),
-    error = function(e) NULL
-  )
-  if (is.null(mod)) return(NULL)
-  
-  newdose <- seq(min(doses), max(doses), length.out = 100)
-  pred_df <- data.frame(Dose = newdose)
-  pred_df$fit <- tryCatch(
-    predict(mod, newdata = data.frame(doses = newdose)),
-    error = function(e) rep(NA, length(newdose))
-  )
-  return(pred_df)
-}
-
-models_nominal <- nested %>%
-  mutate(pred = map(data, ~safe_model_predict(.x, "Cumulative_Dose_adj"))) %>%
- filter(!map_lgl(pred, is.null)) %>%    
-  unnest(pred) %>%
-  mutate(Source = "Nominal Dose")
-
-models_measured <- nested %>%
-  mutate(pred = map(data, ~safe_model_predict(.x, "Measured_adj"))) %>%
- filter(!map_lgl(pred, is.null)) %>%    
-  unnest(pred) %>%
-  mutate(Source = "Measured PFOA")
-
-models_combined <- bind_rows(models_nominal, models_measured)
-
-raw_nominal  <- nested %>%
-  unnest(data) %>%
-  mutate(x = Cumulative_Dose_adj, Source = "Nominal Dose")
-
-raw_measured <- nested %>%
-  unnest(data) %>%
-  mutate(x = Measured_adj, Source = "Measured PFOA")
-
-raw_combined <- bind_rows(raw_nominal, raw_measured)
-
-pfoa_plot <- ggplot() +
-  geom_point(data = raw_combined,
-             aes(x = x, y = Value, color = Source, shape = Sex),
-             alpha = 0.6, size = 1.8) +
-  geom_line(data = models_combined,
-            aes(x = Dose,       # <— here
-                y = fit,
-                color = Source,
-                linetype = Source),
-            size = 1) +
-  facet_wrap(~ Marker, scales = "free_y", nrow = 1) +
-  scale_x_log10() +
-scale_color_manual(
-    name = "Plasma",
-    values = c("Measured PFOA" = "#8405a7", "Nominal Dose" = "#f68f44")) +
-  labs(
-    title = "PFOA: Nominal vs Measured Dose–Response (LL.4)",
-    x = "Dose (log10 scale, +1)",
-    y = "Response (Value)",
-    color = "Source",
-    shape = "Source",
-    linetype = "Source"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(strip.text = element_text(face = "bold"))
-
-
-print(pfoa_plot)
-
-ggsave(filename = "../invivo-pfas-immunotox/R input 56d/plots/pfoa_drc.png", plot = pfoa_plot, width = 9, height = 3, dpi = 300,bg = "white")
 ```
+
 
 
 
@@ -3087,5 +2982,633 @@ replicate_summary <- data_bw%>%
 min_n <- min(replicate_summary$n)
 max_n <- max(replicate_summary$n)
 cat(sprintf("n = %d–%d mice/group\n", min_n, max_n))
+```
+
+#Revisions 
+##Age
+```{r}
+data <- read.csv("../invivo-pfas-immunotox/R input 56d/age_29_56.csv")
+
+expand_rows<- function(df, col, week_label){
+  df %>%
+    uncount(!!sym(col)) %>%
+    mutate(Age = week_label)
+}
+
+# Expand for 6 weeks
+data_6w <- expand_rows(data, "X6weeks", "6")
+# Expand for 8 weeks
+data_8w <- expand_rows(data, "X8weeks", "8")
+# Combine both
+df_long <- bind_rows(data_6w, data_8w)
+df_long <- df_long %>% dplyr::select(-X6weeks, -X8weeks)
+df_long$Age <- as.numeric(df_long$Age)
+df_long <- df_long %>%
+  separate(Dose, into = c("Chemical", "Dose_value"), sep = " ", convert = TRUE) %>%
+  mutate(
+    # if Dose_value is NA, use Chemical name instead
+    Dose_value = ifelse(is.na(Dose_value), Chemical, Dose_value)
+  )
+# Optional: reorder Dose_value numerically
+df_long <- df_long %>%
+  mutate(Dose_value = factor(as.character(Dose_value)))
+
+df_long <- df_long %>%
+  mutate(Chemical = ifelse(!(Chemical %in% c("PFOS", "PFOA")), "PFOS", Chemical)) %>%
+  bind_rows(
+    df_long %>%
+      filter(!(Chemical %in% c("PFOS", "PFOA"))) %>%
+      mutate(Chemical = "PFOA")
+  )
+
+custom_colors_named <- c(
+  "Naïve"   = "#330597",
+  "Vehicle" = "#8405a7",
+  "0.166"   = "#b12a90",
+  "0.5"     = "#d35171",
+  "1"       = "#f68f44",
+  "1.5"     = "#fec029"
+)
+
+sex_colors <- c("Male" = "#1f77b4", "Female" = "#e377c2")
+# Ensure Age is numeric
+df_long <- df_long %>%
+  mutate(Age = as.numeric(Age),
+         Dose_value= factor(as.character(Dose_value), levels = c("Naïve","Vehicle", "0.166","0.5","1","1.5")))
+
+# Vehicle medians
+vehicle_medians <- df_long %>%
+  filter(Dose_value == "Vehicle") %>%
+  group_by(Exposure, Chemical, Dose_value) %>%
+  summarise(vehicle_median = median(Age, na.rm = TRUE), .groups = "drop")
+
+# Summarize data to mean and SD
+summary_data <- df_long %>%
+  group_by(Exposure, Chemical, Dose_value) %>%
+  summarise(
+    mean_age = mean(Age, na.rm = TRUE),
+    sd_age = sd(Age, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  )
+
+# Bar plot with mean ± SD + individual points
+plot <- ggplot() +
+  # Individual points
+   geom_jitter(data = df_long, aes(x = Dose_value, y = Age, color = Sex),
+              size = 1.5, alpha = 0.6, width = 0.2, height = 0) +
+  # Mean ± SD bars
+  geom_bar(data = summary_data, aes(x = Dose_value, y = mean_age, fill = Dose_value),
+           stat = "identity", color = "black", alpha = 0.4, width = 0.6,
+           position = position_dodge(width = 0.7)) +
+  geom_errorbar(data = summary_data,
+                aes(x = Dose_value, ymin = mean_age - sd_age, ymax = mean_age + sd_age),
+                width = 0.2, position = position_dodge(width = 0.7)) +
+  # Facets and scales
+  facet_wrap(Exposure ~ Chemical, scales = "free_y", nrow = 2) +
+    scale_color_manual(name = "Sex", values = sex_colors) +
+  scale_fill_manual(name = "Dose", values = custom_colors_named) +
+  labs(title = "Individual Values with Mean ± SD by Dose and Sex", x = "Dose", y = "Age") +
+  coord_cartesian(ylim = c(0, 10)) +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Arial", size = 12),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none",
+    panel.grid.major = element_line(size = 0.5),
+    panel.grid.minor = element_blank()
+  )
+
+print(plot)
+ggsave("../invivo-pfas-immunotox/R input 56d/plots/age.png", plot, width = 10, height = 6, dpi =300)
+replicate_summary <- df_long%>%
+  group_by(Sex, Dose_value, Chemical, Exposure) %>%  
+  summarise(n = n(), .groups = "drop")
+min_n <- min(replicate_summary$n)
+max_n <- max(replicate_summary$n)
+cat(sprintf("n = %d–%d mice/group\n", min_n, max_n))
+```
+
+
+
+
+## tcplfit2
+```{r}
+library(tcplfit2) 
+datatcplfit1 <- read.csv("../invivo-pfas-immunotox/R input 56d/tcplfit_input_PFOA.csv")
+datatcplfit2 <- read.csv("../invivo-pfas-immunotox/R input 56d/tcplfit_input_PFOS.csv")
+datatcplfit <- rbind(datatcplfit1, datatcplfit2)
+```
+
+###PFOA
+```{r}
+data_measured <- datatcplfit %>%
+  filter(Source %in% c("Measured PFOA"))
+data_measured <- data_measured %>%
+  mutate(Dose = ifelse(Dose == "Vehicle", 0, as.numeric(Dose))) %>%
+  mutate(Dose = as.numeric(Dose)) %>%
+  filter(!is.na(Dose)) 
+
+#I need a control so i made mean_measure =0 if dose is 0
+data_measured <- data_measured %>%
+  mutate(Mean_Measured = if_else(Dose == 0, 0, Mean_Measured))
+# Cytokines to process
+markers <- unique(data_measured$Marker) 
+
+# Initialize result storage
+out_results_pfoa<- list()
+fit_results <- list()
+
+chem <- "PFOA"
+for (marker in markers) {
+  message("=== Processing marker:", marker, "===")
+  out_results_pfoa[[marker]] <- list()
+  fit_results[[marker]] <- list()
+  
+    # Filter test chemical data for this marker
+    test_chem <- data_measured %>%
+      filter(PFAS == chem, Mean_Measured > 0, Marker == marker, !is.na(Value))
+    
+    # Summarize vehicle control for this marker
+    vehicle_ctrl <- data_measured %>%
+      filter(PFAS == chem, Mean_Measured == 0, Marker == marker) %>%
+      summarise(
+        Median = median(Value, na.rm = TRUE),
+        nMad = mad(Value, constant = 1.4826, na.rm = TRUE)
+      )
+    
+    # Skip if baseline or cutoff invalid
+    if (is.na(vehicle_ctrl$Median) || vehicle_ctrl$Median == 0 ||
+        is.na(vehicle_ctrl$nMad) || vehicle_ctrl$nMad == 0) {
+      message(paste("Skipping", chem, "-", marker, ": invalid baseline or cutoff"))
+      next
+    }
+
+    # Check for valid test data
+    if (nrow(test_chem) == 0 || all(is.na(test_chem$Value))) {
+      message("Skipping ", chem, " for ", marker, ": no valid data")
+      next
+    }
+
+    # Prepare row input for concRespCore
+    row <- list(
+      conc = as.numeric(test_chem$Mean_Measured),
+      resp = test_chem$Value,
+      bmed = vehicle_ctrl$Median,
+      cutoff = vehicle_ctrl$nMad,
+      onesd = vehicle_ctrl$nMad,
+      bmr = vehicle_ctrl$nMad,
+      name = chem,
+      assay = marker
+    )
+    
+    # Run concRespCore first
+    out <- tryCatch({
+      concRespCore(row, conthits = TRUE, aicc = FALSE, force.fit = FALSE, 
+                   bidirectional = TRUE,
+                   fitmodels = c("cnst", "hill", "poly1", "poly2", "pow", "exp2", "exp3", "exp4", "exp5"))
+    }, error = function(e) {
+      message(paste("Error in concRespCore for", chem, marker, ":", e$message))
+      return(NULL)
+    })
+    
+    out_results_pfoa[[marker]][[chem]] <- out
+    
+    # Plot (only if out is not NULL)
+    if (!is.null(out)) {
+      tryCatch({
+        concRespPlot(out, ymin = -5000, ymax = 5000)
+      }, error = function(e) {
+        message("Error in concRespPlot for ", chem, marker, ": ", e$message)
+      })
+    }
+    
+    message("=== concRespCore output for ", chem, " - ", marker, " ===")
+    print(out)
+    
+    # Prepare input data frame for tcplfit2_core
+    df_fit <- data.frame(
+      conc = as.numeric(test_chem$Mean_Measured),
+      resp = test_chem$Value,
+      markers = marker,
+      stringsAsFactors = FALSE
+    )
+    
+    # Run tcplfit2_core
+    fit <- tryCatch({
+      tcplfit2_core(df_fit)
+    }, error = function(e) {
+      message(paste("Error in tcplfit2_core for", chem, marker, ":", e$message))
+      return(NULL)
+    })
+    
+    if (is.null(fit)) next
+    fit_results[[marker]][[chem]] <- fit
+    
+    # Plot fits
+    tryCatch({
+      plot1 <- plot_allcurves(fit, test_chem$Dose, test_chem$Value, log_conc = TRUE)
+      plot2 <- concRespPlot2(out, log_conc = FALSE) + ggtitle(paste0(chem, " - ", marker, " Response"))
+      print(plot2)
+      print(plot1)
+    }, error = function(e) {
+      message("Error in plotting for ", chem, marker, ": ", e$message)
+    })
+  }
+
+```
+###PFOS
+```{r}
+data_measured <- datatcplfit %>%
+  filter(Source %in% c("Measured PFOS"))
+data_measured <- data_measured %>%
+  mutate(Dose = ifelse(Dose == "Vehicle", 0, as.numeric(Dose))) %>%
+  mutate(Dose = as.numeric(Dose)) %>%
+  filter(!is.na(Dose)) 
+
+#I need a control so i made mean_measure =0 if dose is 0
+data_measured <- data_measured %>%
+  mutate(Mean_Measured = if_else(Dose == 0, 0, Mean_Measured))
+data_measured$Mean_Measured <-as.numeric(data_measured$Mean_Measured)
+data_measured$Value <-as.numeric(data_measured$Value)
+# Cytokines to process
+markers <- unique(data_measured$Marker) 
+print(markers)
+# Initialize result storage
+out_results_pfos<- list()
+fit_results <- list()
+
+for (marker in markers) {
+  message("=== Processing marker:", marker, "===")
+  out_results_pfos[[marker]] <- list()
+  fit_results[[marker]] <- list()
+  
+    # Filter test chemical data for this marker
+    test_chem <- data_measured %>%
+      filter(PFAS == chem, Mean_Measured > 0, Marker == marker, !is.na(Value))
+    
+    # Summarize vehicle control for this marker
+    vehicle_ctrl <- data_measured %>%
+      filter(PFAS == chem, Mean_Measured == 0, Marker == marker) %>%
+      summarise(
+        Median = median(Value, na.rm = TRUE),
+        nMad = mad(Value, constant = 1.4826, na.rm = TRUE)
+      )
+    
+    # Skip if baseline or cutoff invalid
+    if (is.na(vehicle_ctrl$Median) || vehicle_ctrl$Median == 0 ||
+        is.na(vehicle_ctrl$nMad) || vehicle_ctrl$nMad == 0) {
+      message(paste("Skipping", chem, "-", marker, ": invalid baseline or cutoff"))
+      next
+    }
+
+    # Check for valid test data
+    if (nrow(test_chem) == 0 || all(is.na(test_chem$Value))) {
+      message("Skipping ", chem, " for ", marker, ": no valid data")
+      next
+    }
+
+    # Prepare row input for concRespCore
+    row <- list(
+      conc = as.numeric(test_chem$Mean_Measured),
+      resp = test_chem$Value,
+      bmed = vehicle_ctrl$Median,
+      cutoff = vehicle_ctrl$nMad,
+      onesd = vehicle_ctrl$nMad,
+      bmr = vehicle_ctrl$nMad,
+      name = chem,
+      assay = marker
+    )
+    
+    # Run concRespCore first
+    out <- tryCatch({
+      concRespCore(row, conthits = TRUE, aicc = FALSE, force.fit = FALSE, 
+                   bidirectional = TRUE,
+                   fitmodels = c("cnst", "hill", "poly1", "poly2", "pow", "exp2", "exp3", "exp4", "exp5"))
+    }, error = function(e) {
+      message(paste("Error in concRespCore for", chem, marker, ":", e$message))
+      return(NULL)
+    })
+    
+    out_results_pfos[[marker]][[chem]] <- out
+    
+    # Plot (only if out is not NULL)
+    if (!is.null(out)) {
+      tryCatch({
+        concRespPlot(out, ymin = -5000, ymax = 5000)
+      }, error = function(e) {
+        message("Error in concRespPlot for ", chem, marker, ": ", e$message)
+      })
+    }
+    
+    message("=== concRespCore output for ", chem, " - ", marker, " ===")
+    print(out)
+    
+    # Prepare input data frame for tcplfit2_core
+    df_fit <- data.frame(
+      conc = as.numeric(test_chem$Mean_Measured),
+      resp = test_chem$Value,
+      markers = marker,
+      stringsAsFactors = FALSE
+    )
+    
+    # Run tcplfit2_core
+    fit <- tryCatch({
+      tcplfit2_core(df_fit)
+    }, error = function(e) {
+      message(paste("Error in tcplfit2_core for", chem, marker, ":", e$message))
+      return(NULL)
+    })
+    
+    if (is.null(fit)) next
+    fit_results[[marker]][[chem]] <- fit
+    
+    # Plot fits
+    tryCatch({
+      plot1 <- plot_allcurves(fit, test_chem$Dose, test_chem$Value, log_conc = TRUE)
+      plot2 <- concRespPlot2(out, log_conc = FALSE) + ggtitle(paste0(chem, " - ", marker, " Response"))
+      print(plot2)
+      print(plot1)
+    }, error = function(e) {
+      message("Error in plotting for ", chem, marker, ": ", e$message)
+    })
+  }
+
+```
+
+###Nominal
+```{r}
+data_nominal <- filter(datatcplfit, Source =="Nominal Dose")
+data_nominal <- data_nominal %>%
+  mutate(Dose = ifelse(Dose == "Vehicle", 0, as.numeric(Dose))) %>%
+  mutate(Dose = as.numeric(Dose)) %>%
+  filter(!is.na(Dose)) 
+# Convert mg/kg/day to mg/kg (so its comparable)
+data_nominal <- data_nominal %>%
+  mutate(Dose = Dose*56)
+
+
+chemicals <- unique(data_nominal$PFAS)
+# Cytokines to process
+markers <- unique(data_nominal$Marker) 
+print(markers)
+# Initialize result storage
+out_results_nominal<- list()
+fit_results <- list()
+
+for (marker in markers) {
+  message("=== Processing marker:", marker, "===")
+  out_results_nominal[[marker]] <- list()
+  fit_results[[marker]] <- list()
+  
+  for (chem in chemicals) {
+    message("Processing chemical: ", chem)
+    
+    # Filter test chemical data for this marker
+    test_chem <- data_nominal %>%
+      filter(PFAS == chem, Dose > 0, Marker == marker, !is.na(Value))
+    
+    # Summarize vehicle control for this marker
+    vehicle_ctrl <- data_nominal %>%
+      filter(PFAS == chem, Dose == 0, Marker == marker) %>%
+      summarise(
+        Median = median(Value, na.rm = TRUE),
+        nMad = mad(Value, constant = 1.4826, na.rm = TRUE)
+      )
+    
+    # Skip if baseline or cutoff invalid
+    if (is.na(vehicle_ctrl$Median) || vehicle_ctrl$Median == 0 ||
+        is.na(vehicle_ctrl$nMad) || vehicle_ctrl$nMad == 0) {
+      message(paste("Skipping", chem, "-", marker, ": invalid baseline or cutoff"))
+      next
+    }
+
+    # Check for valid test data
+    if (nrow(test_chem) == 0 || all(is.na(test_chem$Value))) {
+      message("Skipping ", chem, " for ", marker, ": no valid data")
+      next
+    }
+
+    # Prepare row input for concRespCore
+    row <- list(
+      conc = as.numeric(test_chem$Dose),
+      resp = test_chem$Value,
+      bmed = vehicle_ctrl$Median,
+      cutoff = vehicle_ctrl$nMad,
+      onesd = vehicle_ctrl$nMad,
+      bmr = vehicle_ctrl$nMad,
+      name = chem,
+      assay = marker
+    )
+    
+    # Run concRespCore first
+    out <- tryCatch({
+      concRespCore(row, conthits = TRUE, aicc = FALSE, force.fit = FALSE, 
+                   bidirectional = TRUE,
+                   fitmodels = c("cnst", "hill", "poly1", "poly2", "pow", "exp2", "exp3", "exp4", "exp5"))
+    }, error = function(e) {
+      message(paste("Error in concRespCore for", chem, marker, ":", e$message))
+      return(NULL)
+    })
+    
+    out_results_nominal[[marker]][[chem]] <- out
+    
+    # Plot (only if out is not NULL)
+    if (!is.null(out)) {
+      tryCatch({
+        concRespPlot(out, ymin = -5000, ymax = 5000)
+      }, error = function(e) {
+        message("Error in concRespPlot for ", chem, marker, ": ", e$message)
+      })
+    }
+    
+    message("=== concRespCore output for ", chem, " - ", marker, " ===")
+    print(out)
+    
+    # Prepare input data frame for tcplfit2_core
+    df_fit <- data.frame(
+      conc = as.numeric(test_chem$Dose),
+      resp = test_chem$Value,
+      markers = marker,
+      stringsAsFactors = FALSE
+    )
+    
+    # Run tcplfit2_core
+    fit <- tryCatch({
+      tcplfit2_core(df_fit)
+    }, error = function(e) {
+      message(paste("Error in tcplfit2_core for", chem, marker, ":", e$message))
+      return(NULL)
+    })
+    
+    if (is.null(fit)) next
+    fit_results[[marker]][[chem]] <- fit
+    
+    # Plot fits
+    tryCatch({
+      plot1 <- plot_allcurves(fit, test_chem$Dose, test_chem$Value, log_conc = TRUE)
+      plot2 <- concRespPlot2(out, log_conc = FALSE) + ggtitle(paste0(chem, " - ", marker, " Response"))
+      print(plot2)
+      print(plot1)
+    }, error = function(e) {
+      message("Error in plotting for ", chem, marker, ": ", e$message)
+    })
+  }
+}
+
+```
+
+###Combine and clean
+```{r}
+extract_info <- function(name, marker_name) {
+  # Remove marker name from beginning, get chemical
+  chemical <- gsub(paste0(marker_name, "_"), "", name)
+  
+  return(data.frame(
+    Marker = marker_name,
+    Chemical = chemical,
+    stringsAsFactors = FALSE
+  ))
+}
+
+extract_marker_data <- function(out_results_list, marker_name) {
+  do.call(rbind, lapply(names(out_results_list), function(name) {
+    result <- out_results_list[[name]]
+    
+    if (is.null(result)) return(NULL)
+    
+    bmd   <- result$bmd
+    bmdl  <- result$bmdl
+    bmdu  <- result$bmdu
+    
+    # Extract hit call, default FALSE if missing
+    hit <- if(!is.null(result$hit)) result$hit else FALSE
+    
+    info <- extract_info(name, marker_name)
+    info$BMD_uM  <- bmd
+    info$BMDL_uM <- bmdl
+    info$BMDU_uM <- bmdu
+    info$hit <- hit
+    
+    return(info)
+  }))
+}
+nominal_ALP  <- extract_marker_data(out_results_nominal$ALP, "ALP") %>%
+  mutate(Source = "nominal")
+nominal_ALT  <- extract_marker_data(out_results_nominal$ALT, "ALT")%>%
+  mutate(Source = "nominal")
+nominal_CA  <- extract_marker_data(out_results_nominal$CA, "CA")%>%
+  mutate(Source = "nominal")
+nominal_TGL  <- extract_marker_data(out_results_nominal$TGL, "TGL")%>%
+  mutate(Source = "nominal")
+
+pfoa_ALP  <- extract_marker_data(out_results_pfoa$ALP, "ALP")%>%
+  mutate(Source = "PFOA_measured_liver")
+pfoa_ALT  <- extract_marker_data(out_results_pfoa$ALT, "ALT")%>%
+  mutate(Source = "PFOA_measured_liver")
+pfoa_CA  <- extract_marker_data(out_results_pfoa$CA, "CA")%>%
+  mutate(Source = "PFOA_measured_liver")
+pfoa_TGL  <- extract_marker_data(out_results_pfoa$TGL, "TGL")%>%
+  mutate(Source = "PFOA_measured_liver")
+
+pfos_ALP  <- extract_marker_data(out_results_pfos$ALP, "ALP") %>%
+  mutate(Source = "PFOS_measured_liver")
+pfos_ALT  <- extract_marker_data(out_results_pfos$ALT, "ALT") %>%
+  mutate(Source = "PFOS_measured_liver")
+pfos_CA  <- extract_marker_data(out_results_pfos$CA, "CA") %>%
+  mutate(Source = "PFOS_measured_liver")
+pfos_TGL  <- extract_marker_data(out_results_pfos$TGL, "TGL") %>%
+  mutate(Source = "PFOS_measured_liver")
+
+combined<- bind_rows(nominal_ALP, nominal_ALT, nominal_CA,nominal_TGL, pfoa_ALP,pfoa_ALT, pfoa_CA,pfoa_TGL, pfos_ALP,pfos_ALT, pfos_CA,pfos_TGL)
+
+#getting dose info from original df Calculate dose range per Chemical–Source–Marker group
+df <- datatcplfit %>%
+  mutate(
+    Dose_final = if_else(Source == "Nominal Dose", Cumulative_Dose, Mean_Measured)
+  )
+
+dose_ranges <- df %>%
+  group_by(PFAS, Source, Marker) %>%
+  summarise(
+    minDose = min(Dose_final, na.rm = TRUE),
+    maxDose = max(Dose_final, na.rm = TRUE),
+    .groups = "drop"
+  )%>%
+  rename(PFAS ="Chemical")
+# Apply filters
+combined_filtered <- combined %>%
+  left_join(dose_ranges, by = c("Chemical", "Source", "Marker")) %>%
+  mutate(
+    # Step 1: Check if BMD is within min/max range if available
+    in_range = if_else(!is.na(minDose) & !is.na(maxDose),
+                       BMD_uM >= minDose & BMD_uM <= maxDose,
+                       TRUE),  # keep if range missing
+    
+    # Step 2: Hit threshold
+    high_hit = hit >= 0.9,
+    
+    # Step 3: Valid BMDL
+    valid_BMDL = !is.na(BMDL_uM),
+    
+    # Step 4: Ratio filter
+    ratio_ok = (BMDU_uM / BMDL_uM) < 40,
+    
+    # Step 5: Combine all filters
+    keep = in_range & high_hit & valid_BMDL & ratio_ok,
+    
+    # Step 6: Set invalid BMDs to NA
+    BMD_uM  = ifelse(keep, BMD_uM, NA),
+    BMDL_uM = ifelse(keep, BMDL_uM, NA),
+    BMDU_uM = ifelse(keep, BMDU_uM, NA)
+  ) %>%
+  # Step 7: Remove rows where all BMD columns are NA
+  filter(!is.na(BMD_uM) & !is.na(BMDL_uM) & !is.na(BMDU_uM))
+
+p <- ggplot(combined_filtered, aes(x = BMD_uM, y = Chemical, color = Source, shape = Source)) +
+  geom_point(position = position_dodge(width = 0.7), size = 3) +
+  geom_errorbarh(
+    aes(
+      xmin = ifelse(is.na(BMDL_uM), BMD_uM, BMDL_uM),
+      xmax = ifelse(is.na(BMDU_uM), BMD_uM, BMDU_uM)
+    ),
+    height = 0.3,
+    position = position_dodge(width = 0.7)
+  ) +
+  facet_grid(~Marker) +
+  scale_x_log10() +
+  scale_color_manual(values = c("nominal" = "#7e03a8", "PFOS_measured_liver" = "#ed7953", "PFOA_measured_liver" = "#ed7953")) +
+  labs(
+    title = "Comparison of BMDs",
+    x = "Benchmark Dose (mg/kg, log scale)",
+    y = "Marker"
+  ) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+print(p)
+ggsave("../invivo-pfas-immunotox/R input 56d/plots/BMD_Comparison_DotWhisker_filtered.png", p, width = 10, height = 6, dpi =300)
+```
+###Plot on original drc
+```{r}
+
+# For PFOA
+bmd_lines_pfoa <- combined_filtered %>%
+  filter(Chemical == "PFOA", Marker %in% c("ALP", "ALT"))
+
+# For PFOS
+bmd_lines_pfos <- combined_filtered %>%
+  filter(Chemical == "PFOS", Marker %in% c("ALP", "ALT"))
+pfos_plot <- pfos_plot +
+  geom_vline(data = bmd_lines_pfos, aes(xintercept = BMD_uM),
+             linetype = "dotted", color = "black", size = 0.8)
+
+pfoa_plot <- pfoa_plot +
+  geom_vline(data = bmd_lines_pfoa, aes(xintercept = BMD_uM),
+             linetype = "dotted", color = "black", size = 0.8)
+print(pfos_plot)
+ggsave("../invivo-pfas-immunotox/R input 56d/plots/drc_pfos.png", pfos_plot, width = 10, height = 6, dpi =300)
+print(pfoa_plot)
+ggsave("../invivo-pfas-immunotox/R input 56d/plots/drc_pfoa.png", pfoa_plot, width = 10, height = 6, dpi =300)
 ```
 

@@ -1,0 +1,14 @@
+# PFOS and PFOA Exposure Induces Liver Injury and Sex-Dependent Immune Effects in C57BL/6 Mice 
+## Authors
+Amélie Blais1, 4, Allison Loan1, 4, Eunnara Cho1, Asia Woodtke1, Houman Moteshareie2, Lauren M. Bradford1, Gong Zhang1, Guillaume Pelletier1, Martha Navarro3, Matthew J. Meier1, Andy Nong1, Rocio Aranda-Rodriguez1, Kristin M. Eccles1, David Prescott3, Azam Tayabali15
+  
+Affiliations:
+
+1 Environmental Health Science and Research Bureau, Healthy Environments and Consumer Safety Branch, Health Canada, Ottawa, Ontario, Canada 
+2 Department of Electrical and Computer Engineering, Université de Sherbrooke, Sherbrooke, Quebec, Canada 
+3 Bureau of Chemical Safety, Health Products and Food Branch, Health Canada, Ottawa, Ontario, Canada 
+4 These authors contributed equally. 
+5 Lead contact 
+
+## Abstract
+Per- and polyfluoroalkyl substances (PFAS) are persistent environmental contaminants known as “forever chemicals.” Perfluorooctanoic acid (PFOA) and perfluorooctanesulfonic acid (PFOS), representing carboxylate and sulfonate subclasses, are among the most frequently detected PFAS in biomonitoring studies. We characterized the hepatotoxicity and immunotoxicity of PFOS and PFOA in male and female C57BL/6-Elite mice exposed via oral gavage for 28 (1.5 mg/kg/day) or 56 days (0.166–1.5 mg/kg/day). Both compounds caused pancreatic atrophy, hepatomegaly, elevated serum biomarkers of liver injury, and decreased serum triglyceride levels across sexes and exposure durations. Liver transcriptomics revealed enrichment of PPAR signaling, lipid metabolism disruption, and AGE-RAGE pathways. Immunotoxicity assessments showed PFOS-induced cytokine suppression (IL-4, IL-17α, TNF-α, MCP-1) in males, while females exhibited minimal cytokine changes but altered thymocyte development. Overall, PFAS caused sex-independent hepatic and pancreatic toxicity but sex-dependent immune effects. Limitations include asymmetric dosing and lack of estrous monitoring; future studies should integrate histopathology and gene expression confirmatory analysis. 

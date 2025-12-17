@@ -3,7 +3,6 @@
 Amélie Blais1, 4, Allison Loan1, 4, Eunnara Cho1, Asia Woodtke1, Houman Moteshareie2, Lauren M. Bradford1, Gong Zhang1, Guillaume Pelletier1, Martha Navarro3, Matthew J. Meier1, Andy Nong1, Rocio Aranda-Rodriguez1, Kristin M. Eccles1, David Prescott3, Azam Tayabali15
   
 Affiliations:
-
 1 Environmental Health Science and Research Bureau, Healthy Environments and Consumer Safety Branch, Health Canada, Ottawa, Ontario, Canada 
 2 Department of Electrical and Computer Engineering, Université de Sherbrooke, Sherbrooke, Quebec, Canada 
 3 Bureau of Chemical Safety, Health Products and Food Branch, Health Canada, Ottawa, Ontario, Canada 

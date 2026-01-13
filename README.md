@@ -3,17 +3,10 @@
 
 ## Authors
 
-Amélie Blais1, 4, Allison Loan1, 4, Eunnara Cho1, Asia Woodtke1, Houman
-Moteshareie2, Lauren M. Bradford1, Gong Zhang1, Guillaume Pelletier1,
-Martha Navarro3, Matthew J. Meier1, Andy Nong1, Rocio Aranda-Rodriguez1,
-Kristin M. Eccles1, David Prescott3, Azam Tayabali15
-
-Affiliations: 1 Environmental Health Science and Research Bureau,
-Healthy Environments and Consumer Safety Branch, Health Canada, Ottawa,
-Ontario, Canada 2 Department of Electrical and Computer Engineering,
-Université de Sherbrooke, Sherbrooke, Quebec, Canada 3 Bureau of
-Chemical Safety, Health Products and Food Branch, Health Canada, Ottawa,
-Ontario, Canada 4 These authors contributed equally. 5 Lead contact
+Amélie Blais, Allison Loan, Eunnara Cho, Asia Woodtke, Houman
+Moteshareie, Lauren M. Bradford, Gong Zhang, Guillaume Pelletier, Martha
+Navarro, Matthew J. Meier, Andy Nong, Rocio Aranda-Rodriguez, Kristin M.
+Eccles, David Prescott, Azam Tayabali
 
 ## Abstract
 
@@ -35,3 +28,12 @@ development. Overall, PFAS caused sex-independent hepatic and pancreatic
 toxicity but sex-dependent immune effects. Limitations include
 asymmetric dosing and lack of estrous monitoring; future studies should
 integrate histopathology and gene expression confirmatory analysis.
+
+## Graphical Abstract
+
+![](allison%20figure.png)
+
+## Processing Notebooks
+
+All data processing, cleaning, and preprocessing notebooks are located
+in the Processing_Notebooks/ directory.

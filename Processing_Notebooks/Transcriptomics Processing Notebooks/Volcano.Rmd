@@ -1,0 +1,85 @@
+```{r}
+library(ggplot2)
+library(dplyr)
+library(EnhancedVolcano)
+```
+
+```{r}
+deg <- read.csv("../Eunnara stuff/DEGs_compiled.csv")
+deg <- deg %>%
+  filter(dose == 1.5)
+# 1. Find the smallest non-zero padj in the whole dataset
+min_nonzero <- min(deg$padj[deg$padj > 0], na.rm = TRUE)
+
+deg2 <- deg %>%
+  # Replace padj == 0 with that minimum
+  mutate(padj = ifelse(padj == 0, min_nonzero, padj)) %>%
+  # Compute –log10(padj) and cap for plotting
+  mutate(log10p = -log10(padj)) %>%
+  mutate(log10p = pmin(log10p, 50)) %>%
+  # Classify regulation
+  mutate(regulation = case_when(
+    padj < 0.05 & linearFoldChange >  1.5  ~ "Upregulated",
+    padj < 0.05 & linearFoldChange < -1.5  ~ "Downregulated",
+    TRUE                                ~ "No change"
+  )) %>%
+  # Ensure factor levels
+  mutate(
+    regulation = factor(regulation, levels = c("Upregulated","Downregulated","No change")),
+    sex        = factor(sex,        levels = c("Male","Female"))
+  )
+
+# Colour & shape maps
+cols   <- c("Upregulated"   = "red",
+            "Downregulated" = "#330597",
+            "No change"     = "grey")
+shapes <- c("Male" = 17, "Female" = 16)
+
+unique_combos <- unique(deg2[, c("duration","chemical")])
+
+for (i in seq_len(nrow(unique_combos))) {
+  dur  <- unique_combos$duration[i]
+  chem <- unique_combos$chemical[i]
+  
+  sub <- filter(deg2, duration == dur, chemical == chem)
+  
+  p <- ggplot(sub, aes(x = log2FoldChange, y = log10p)) +
+  geom_point(aes(color = regulation, shape = sex),
+             size = 2, alpha = 0.3,
+             position = position_jitter(width = 0, height = 0.1)) +
+  scale_color_manual(values = cols) +
+  scale_shape_manual(values = shapes) +
+  geom_vline(xintercept = c(-0.58,0.58), linetype="dashed") +
+  geom_hline(yintercept = -log10(0.05), linetype="dashed") +
+  
+  # Label only the top 10 by absolute FC among padj<0.05
+  geom_label_repel(
+    data = sub %>%
+      filter(padj < 0.05) %>%
+      slice_max(order_by = abs(log2FoldChange), n = 10),
+    aes(label = Gene_Symbol, color = regulation),
+    fill        = "white",     # white background
+    label.size  = 0.5,         # box border thickness
+    size        = 4,           # text size
+    max.overlaps= 20,
+    box.padding = 0.3 ,  
+    nudge_y =-1,
+    point.padding =0.1 
+  ) +
+  
+  labs(
+    title = paste("Volcano —", chem, "@", dur),
+    x     = expression(Log[2]~Fold~Change),
+    y     = expression(-Log[10]~adjusted~P)
+  ) +
+  theme_minimal()
+ggsave(
+    filename = paste0("../invivo-pfas-immunotox/Eunnara stuff/volcano_", chem, "_", dur, ".png"),
+    plot     = p,
+    width    = 5, height = 5, dpi = 300,
+    bg = "white"
+  )
+print(p)
+}
+```
+

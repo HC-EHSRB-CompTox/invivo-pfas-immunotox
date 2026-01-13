@@ -1,4 +1,5 @@
 
+
 #Load libraries
 ```{r}
 library(readxl)
@@ -1502,7 +1503,7 @@ plot <- ggplot(data_tdar, aes(x = interaction(Dose, Sex), y = Value)) +
     values = custom_colors_named
   ) +
   labs(
-    title = "Normalized Response by Dose and Sex",
+    title = "Norma lized Response by Dose and Sex",
     x = "Dose and Sex",
     y = "Value"
   ) +

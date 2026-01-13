@@ -36,4 +36,4 @@ integrate histopathology and gene expression confirmatory analysis.
 ## Processing Notebooks
 
 All data processing, cleaning, and preprocessing notebooks are located
-in the Processing_Notebooks/ directory.
+in the Processing_Notebooks folder

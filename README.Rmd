@@ -13,3 +13,6 @@ Per- and polyfluoroalkyl substances (PFAS) are persistent environmental contamin
 
 ## Processing Notebooks
 All data processing, cleaning, and preprocessing notebooks are located in the Processing_Notebooks folder
+
+## Paper
+Blais A, Loan A, Cho E, Woodtke A, Moteshareie H, Bradford LM, Zhang G, Pelletier G, Navarro M, Meier MJ, Nong A, Aranda-Rodriguez R, Eccles KM, Prescott D, Tayabali AF. PFOS and PFOA exposure induces liver injury and sex-dependent immune effects in C57BL/6 mice. iScience. 2026 Jan 14;29(2):114693. doi: 10.1016/j.isci.2026.114693. PMID: 41641100; PMCID: PMC12865548.
